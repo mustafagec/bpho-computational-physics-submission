@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Optics Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>SIM 😲😲😲😲😲😲😲😲😲😲😲😲😲😲</h1>
+
+  <!-- simulation type -->
+  <div class="tab-group">
+    <button class="tab-button active" data-sim="distortion">image lens distortions</button>
+    <button class="tab-button" data-sim="prism">prism simulation</button>
+  </div>
+
+  <!-- pixel mapping operation selection -->
+  <div id="distortion-tabs" class="sub-tab-group">
+    <button class="sub-tab-button active" data-map="task_5">task 5</button>
+    <button class="sub-tab-button" data-map="task_6">task 6</button> 
+
+    
+  </div>
+  <canvas id="glcanvas" width="800" height="600"></canvas>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
