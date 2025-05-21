@@ -11,31 +11,26 @@ out vec4 outColor;
 
 const float scale = 0.125f;
 
-
-
-// inverse mapping function ------------------------------------------------------
-
+// Inverse of the map_to function: maps from image space back to object space
 vec2 inverse_map(vec2 mapped_pos) {
     float X = mapped_pos.x;
     float Y = mapped_pos.y;
     float f = u_focal_length;
-
+    
     if (abs(X) < 0.001) return vec2(0.0);
     
-
-    // calculate the inverse of x,y --> X,Y
-
+    // Calculate the original x coordinate
     float x = (f * X) / (X + f);
+    
+    // Calculate the original y coordinate
     float y = Y * x / X;
     
     return vec2(x, y);
 }
 
-//---------------------------------------------------------------------------------
-
 void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
-    vec2 world_pos = (uv - 0.5) * (1.0 / scale); 
+    vec2 world_pos = (uv - 0.5) * 10.0; // Scale to match the Python xlim/ylim
     
     // Draw the original image
     vec2 original_space = (uv - 0.5) / scale; // Convert to -1 to 1 space
@@ -48,15 +43,18 @@ void main() {
         original_space.y <= u_image_position.y + u_image_size.y;
     
     if (in_original_image) {
-        //calculate texture coordinates for the original image
+        // Calculate texture coordinates for the original image
         vec2 image_uv = (original_space - u_image_position) / u_image_size;
         image_uv = image_uv * vec2(1.0, -1.0) + vec2(0.0, 1.0); // Flip Y and normalize to 0-1
         outColor = texture(u_image, image_uv);
         return;
     }
     
+    // Try to find if this point is in the distorted image
+    // Use the inverse mapping to check
     vec2 obj_pos = inverse_map(world_pos);
     
+    // Check if the inverse-mapped position is within the original image bounds
     bool in_distorted_area = 
         obj_pos.x >= u_image_position.x && 
         obj_pos.x <= u_image_position.x + u_image_size.x &&
@@ -72,21 +70,19 @@ void main() {
         return;
     }
     
-    //construction lines -----------------------------------------------------------
-
-    /* blue focal line */
+    // Draw a blue focal line
     if (abs(world_pos.x) < 0.03 && abs(world_pos.y) < 1.5) {
-        outColor = vec4(0.0, 0.0, 1.0, 0.3);
+        outColor = vec4(0.1, 0.1, 1.0, 1.0);
         return;
     }
     
-    /* focal points */
+    // Draw focal points
     if (length(world_pos - vec2(u_focal_length, 0.0)) < 0.05 || 
         length(world_pos - vec2(-u_focal_length, 0.0)) < 0.05) {
-        outColor = vec4(1.0, 0.0, 0.0, 1.0);
+        outColor = vec4(0.7, 0.0, 0.0, 1.0);
         return;
     }
     
-    /* background colour */
+    // Background color
     outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

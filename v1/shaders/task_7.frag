@@ -25,8 +25,9 @@ vec2 inverse_map(vec2 mapped_pos) {
 
     // calculate the inverse of x,y --> X,Y
 
-    float x = (f * X) / (X + f);
-    float y = Y * x / X;
+
+    float x = (f * X) / (X - f);
+    float y = -Y * x / X;
     
     return vec2(x, y);
 }
@@ -37,10 +38,10 @@ void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
     vec2 world_pos = (uv - 0.5) * (1.0 / scale); 
     
-    // Draw the original image
+    //draw the original image
     vec2 original_space = (uv - 0.5) / scale; // Convert to -1 to 1 space
     
-    // Check if we're in the original image area
+    //original image bounds check
     bool in_original_image = 
         original_space.x >= u_image_position.x && 
         original_space.x <= u_image_position.x + u_image_size.x &&
@@ -57,15 +58,13 @@ void main() {
     
     vec2 obj_pos = inverse_map(world_pos);
     
-    bool in_distorted_area = 
-        obj_pos.x >= u_image_position.x && 
-        obj_pos.x <= u_image_position.x + u_image_size.x &&
-        obj_pos.y >= u_image_position.y && 
-        obj_pos.y <= u_image_position.y + u_image_size.y &&
-        obj_pos.x > u_focal_length; // Points must be beyond focal length
+    bool in_virtual_zone =
+         obj_pos.x > u_image_position.x &&
+         obj_pos.x <  u_focal_length &&
+         obj_pos.y >= u_image_position.y &&
+         obj_pos.y <= u_image_position.y + u_image_size.y;
     
-    if (in_distorted_area) {
-        // Calculate texture coordinates for the original image
+    if (in_virtual_zone) {
         vec2 image_uv = (obj_pos - u_image_position) / u_image_size;
         image_uv = image_uv * vec2(1.0, -1.0) + vec2(0.0, 1.0); // Flip Y and normalize to 0-1
         outColor = texture(u_image, image_uv);

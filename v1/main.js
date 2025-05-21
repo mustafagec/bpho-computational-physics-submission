@@ -3,7 +3,7 @@ import { loadDistortionShader } from './render/distortion_shader.js';
 import { loadPrismShader } from './render/prism_shader.js';
 
 let currentSim = 'distortion';
-let currentMap = 'lens_distortion';
+let currentMap = 'task_6';
 let gl = null;
 
 async function main() {
@@ -46,6 +46,8 @@ async function updateRenderer() {
     await loadDistortionShader(gl, currentMap);
   } else if (currentSim === 'prism') {
     await loadPrismShader(gl);
+  } else if (currentSim === 'rainbow') {
+    return
   }
 }
 

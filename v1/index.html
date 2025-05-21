@@ -9,32 +9,45 @@
 <body>
   <h1>SIM 😲😲😲😲😲😲😲😲😲😲😲😲😲😲</h1>
 
-  <!-- simulation type -->
-  <div class="tab-group">
-    <button class="tab-button active" data-sim="distortion">Image Lens Distortions</button>
-    <button class="tab-button" data-sim="prism">Prism Simulation</button>
-  </div>
+  <div class="sidebar-container">
+    <div class="tabs">
+      <!-- simulation type -->
+      <div class="tab-group">
+        <button class="tab-button active" data-sim="distortion">lens distortions</button>
+        <button class="tab-button" data-sim="prism">prism simulation</button>
+        <button class="tab-button" data-sim="rainbow">rainbow visualisation</button>
+      </div>
 
-  <!-- pixel mapping operation selection -->
-  <div id="distortion-tabs" class="sub-tab-group">
-    <button class="sub-tab-button active" data-map="lens_distortion">Lens Distortion</button>
-    <button class="sub-tab-button" data-map="task_5">Task 5</button>
-    <button class="sub-tab-button" data-map="task_6">Task 6</button>
-  </div>
-  
-  <div id="lens-controls" class="controls">
-    <p>Use arrow keys to move the image.</p>
-    <div class="control-row">
-      <label>Focal Length: <span id="focal-length-value">1.5</span></label>
-      <input type="range" id="focal-length" min="0.5" max="3.0" step="0.1" value="1.5">
+      <!-- pixel mapping operation selection -->
+      <div id="distortion-tabs" class="sub-tab-group">
+        <button class="sub-tab-button" data-map="task_5">task 5</button>
+        <button class="sub-tab-button active" data-map="task_6">task 6</button>
+        <button class="sub-tab-button" data-map="task_7">task 7</button>
+        <button class="sub-tab-button" data-map="task_8">task 8</button>
+        <button class="sub-tab-button" data-map="task_9">task 9</button>
+        <button class="sub-tab-button" data-map="task_10">task 10</button>
+      </div>
     </div>
-    <div class="control-row">
-      <label>Image Width: <span id="image-width-value">2.0</span></label>
-      <input type="range" id="image-width" min="0.5" max="4.0" step="0.1" value="2.0">
-    </div>
-    <div class="control-row">
-      <label>Image Height: <span id="image-height-value">1.0</span></label>
-      <input type="range" id="image-height" min="0.5" max="2.0" step="0.1" value="1.0">
+
+    <div id="lens-controls" class="controls">
+      <p>controls</p>
+      <div class="control-row">
+        <label>Focal Length: <span id="focal-length-value">1.5</span></label>
+        <input type="range" id="focal-length" min="0.5" max="3.0" step="0.1" value="1.5">
+      </div>
+      <!--
+      <div class="control-row">
+        <label>Image Width: <span id="image-width-value">2.0</span></label>
+        <input type="range" id="image-width" min="0.5" max="4.0" step="0.1" value="2.0">
+      </div>
+      <div class="control-row">
+        <label>Image Height: <span id="image-height-value">1.0</span></label>
+        <input type="range" id="image-height" min="0.5" max="2.0" step="0.1" value="1.0">
+      </div>-->
+      <div class="control-row">
+        <label>Image Scale: <span id="image-scale-value">1.0</span></label>
+        <input type="range" id="image-scale" min="0.5" max="3.0" step="0.1" value="1.0">
+      </div>
     </div>
   </div>
 

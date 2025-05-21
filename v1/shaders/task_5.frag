@@ -25,8 +25,8 @@ vec2 inverse_map(vec2 mapped_pos) {
 
     // calculate the inverse of x,y --> X,Y
 
-    float x = (f * X) / (X + f);
-    float y = Y * x / X;
+    float x = -X;
+    float y = Y;
     
     return vec2(x, y);
 }
