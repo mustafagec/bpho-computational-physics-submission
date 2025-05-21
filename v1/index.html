@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Optics Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>SIM 😲😲😲😲😲😲😲😲😲😲😲😲😲😲</h1>
+
+  <!-- simulation type -->
+  <div class="tab-group">
+    <button class="tab-button active" data-sim="distortion">Image Lens Distortions</button>
+    <button class="tab-button" data-sim="prism">Prism Simulation</button>
+  </div>
+
+  <!-- pixel mapping operation selection -->
+  <div id="distortion-tabs" class="sub-tab-group">
+    <button class="sub-tab-button active" data-map="lens_distortion">Lens Distortion</button>
+    <button class="sub-tab-button" data-map="task_5">Task 5</button>
+    <button class="sub-tab-button" data-map="task_6">Task 6</button>
+  </div>
+  
+  <div id="lens-controls" class="controls">
+    <p>Use arrow keys to move the image.</p>
+    <div class="control-row">
+      <label>Focal Length: <span id="focal-length-value">1.5</span></label>
+      <input type="range" id="focal-length" min="0.5" max="3.0" step="0.1" value="1.5">
+    </div>
+    <div class="control-row">
+      <label>Image Width: <span id="image-width-value">2.0</span></label>
+      <input type="range" id="image-width" min="0.5" max="4.0" step="0.1" value="2.0">
+    </div>
+    <div class="control-row">
+      <label>Image Height: <span id="image-height-value">1.0</span></label>
+      <input type="range" id="image-height" min="0.5" max="2.0" step="0.1" value="1.0">
+    </div>
+  </div>
+
+  <canvas id="glcanvas" width="800" height="600"></canvas>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
+<!--SIM 😲😲😲😲😲😲😲😲😲😲😲😲😲😲-->
