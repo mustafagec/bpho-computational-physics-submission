@@ -1,6 +1,5 @@
 import { initRenderer, loadShaderFromURL } from './common.js';
 
-//cache for compiled shader programs
 const shaderPrograms = {
   task_5: null,
   task_6: null,
@@ -10,7 +9,6 @@ const shaderPrograms = {
   task_10: null,
 };
 
-//track active event listeners for cleanup
 let activeListeners = [];
 function addListener(target, event, handler) {
   target.addEventListener(event, handler);
@@ -40,7 +38,6 @@ function drawQuad(gl, program) {
 export async function loadDistortionShader(gl, task) {
   clearListeners();
 
-  //load/compile base vertex shader
   const vs = await loadShaderFromURL('shaders/base.vert');
   const fsPath = `shaders/${task}.frag`;
 
@@ -51,36 +48,53 @@ export async function loadDistortionShader(gl, task) {
   const program = shaderPrograms[task];
   gl.useProgram(program);
 
-  setupLensControls(gl, program);
+  setupLensControls(gl, program, task);
 
-  //final draw call
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clearColor(0, 0, 0, 1);
   gl.clear(gl.COLOR_BUFFER_BIT);
   drawQuad(gl, program);
 }
 
-async function setupLensControls(gl, program) {
-  //uniform locations
+async function setupLensControls(gl, program, task) {
+  //const lensControls = document.getElementById('lens-controls');
+  const task10Controls = document.getElementById('task10-controls');
+
+  const isTask10 = program === shaderPrograms['task_10'];
+  document.getElementById('focal-length').parentElement.style.display = isTask10 ? 'none' : 'block';
+  document.getElementById('image-scale').parentElement.style.display = isTask10 ? 'none' : 'block';
+  task10Controls.style.display = isTask10 ? 'block' : 'none';
+
   const uResolution = gl.getUniformLocation(program, 'u_resolution');
   const uFocal = gl.getUniformLocation(program, 'u_focal_length');
   const uPos = gl.getUniformLocation(program, 'u_image_position');
-  const uSize = gl.getUniformLocation(program, 'u_image_size');
+  const uImageSize = gl.getUniformLocation(program, 'u_image_size');
+  const uViewportSize = gl.getUniformLocation(program, 'u_viewport_size')
   const uImage = gl.getUniformLocation(program, 'u_image');
+  const uRf = gl.getUniformLocation(program, 'u_rf');
+  const uArcDeg = gl.getUniformLocation(program, 'u_arc_deg');
 
-  //initial variables
   let focal = 1.0;
-  const position = [focal + 0.5, -0.5];
+  let position = isTask10 ? [0.0, 0.0] : [focal + 0.5, -0.5];
+  let rf = 1.0;
+  let arcDeg = 160.0;
+  let viewport_scale = 6.0;
 
-  let scale = 1.0;
-  let aspect = 1.0;
+  let image_scale = 1.0;
+  let aspect;// = 1.0;
   let imgReady = false;
 
-  /* image initialisation */
   const img = new Image();
   img.src = '../assets/waifu.jpg';
   img.onload = () => {
     aspect = img.width / img.height;
+
+    if (isTask10) {
+      const cornerDist = Math.SQRT2;
+      const maxRadius = 1.0;
+      image_scale = maxRadius / cornerDist;
+    }
+
     imgReady = true;
     initTexture();
     triggerDraw();
@@ -99,13 +113,18 @@ async function setupLensControls(gl, program) {
     gl.uniform2f(uResolution, gl.canvas.width, gl.canvas.height);
   }
 
-  //user input handling --------------------------------------------------------------------
-
-  //UI elements
+  // UI elements
   const focalSlider = document.getElementById('focal-length');
   const focalLabel = document.getElementById('focal-length-value');
-  const scaleSlider = document.getElementById('image-scale');
-  const scaleLabel = document.getElementById('image-scale-value');
+  const imageScaleSlider = document.getElementById('image-scale');
+  const imageScaleLabel = document.getElementById('image-scale-value');
+  const viewportScaleLabel = document.getElementById('viewport-scale-value');
+  const viewportScaleSlider = document.getElementById('viewport-scale');
+
+  const rfSlider = document.getElementById('rf-slider');
+  const rfLabel = document.getElementById('rf-value');
+  const arcSlider = document.getElementById('arc-slider');
+  const arcLabel = document.getElementById('arc-value');
 
   addListener(focalSlider, 'input', () => {
     focal = parseFloat(focalSlider.value);
@@ -113,46 +132,91 @@ async function setupLensControls(gl, program) {
     triggerDraw();
   });
 
-  addListener(scaleSlider, 'input', () => {
-    scale = parseFloat(scaleSlider.value);
-    scaleLabel.textContent = scale.toFixed(1);
+  addListener(imageScaleSlider, 'input', () => {
+    image_scale = parseFloat(imageScaleSlider.value);
+    imageScaleLabel.textContent = image_scale.toFixed(1);
     triggerDraw();
   });
 
-  /* mouse dragging */
-  let dragging = false;
-  let last = [0, 0];
-  const canvas = gl.canvas;
-  addListener(canvas, 'mousedown', e => { dragging = true; last = [e.clientX, e.clientY]; });
-  addListener(window, 'mouseup', () => { dragging = false; });
-  addListener(window, 'mousemove', e => {
-    if (!dragging) return;
-    const dx = e.clientX - last[0];
-    const dy = e.clientY - last[1];
-    last = [e.clientX, e.clientY];
-    position[0] += (8 * dx) / canvas.width;
-    position[1] -= (8 * dy) / canvas.height;
+    addListener(viewportScaleSlider, 'input', () => {
+    viewport_scale = parseFloat(viewportScaleSlider.value);
+    viewportScaleLabel.textContent = viewport_scale.toFixed(1);
     triggerDraw();
   });
 
-  /* arrow keys */
-  addListener(window, 'keydown', e => {
-    const step = 0.1;
-    if (e.key === 'ArrowLeft') position[0] -= step;
-    if (e.key === 'ArrowRight') position[0] += step;
-    if (e.key === 'ArrowUp') position[1] += step;
-    if (e.key === 'ArrowDown') position[1] -= step;
+  addListener(rfSlider, 'input', () => {
+    rf = parseFloat(rfSlider.value);
+    rfLabel.textContent = rf.toFixed(1);
     triggerDraw();
   });
 
-  /* drawing */
+  addListener(arcSlider, 'input', () => {
+    arcDeg = parseFloat(arcSlider.value);
+    arcLabel.textContent = arcDeg;
+    triggerDraw();
+  });
+
+  // Disable dragging and keys for task 10
+  if (!isTask10) {
+    let dragging = false;
+    let last = [0, 0];
+    const canvas = gl.canvas;
+
+    addListener(canvas, 'mousedown', e => {
+      dragging = true;
+      last = [e.clientX, e.clientY];
+    });
+    addListener(window, 'mouseup', () => {
+      dragging = false;
+    });
+    addListener(window, 'mousemove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - last[0];
+      const dy = e.clientY - last[1];
+      last = [e.clientX, e.clientY];
+      position[0] += (8 * dx) / canvas.width;
+      position[1] -= (8 * dy) / canvas.height;
+      triggerDraw();
+    });
+
+    addListener(window, 'keydown', e => {
+      const step = 0.1;
+      if (e.key === 'ArrowLeft') position[0] -= step;
+      if (e.key === 'ArrowRight') position[0] += step;
+      if (e.key === 'ArrowUp') position[1] += step;
+      if (e.key === 'ArrowDown') position[1] -= step;
+      triggerDraw();
+    });
+  }
+
   function triggerDraw() {
     if (!imgReady) return;
     gl.useProgram(program);
-    const size = [scale * aspect, scale];
+
+    const aspect = img.width / img.height;
+    
+
+    let height = 1.0;
+    let width = aspect * height;
+    let image_world_size = [width * image_scale, height * image_scale];
+
+    if (isTask10) {
+      const diag = 2.0;
+      height = diag / Math.sqrt(aspect * aspect + 1);
+      width = aspect * height;
+      image_world_size = [width * image_scale, height * image_scale];
+
+      gl.uniform1f(uRf, rf);
+      gl.uniform1f(uArcDeg, arcDeg);
+    }
+
     gl.uniform1f(uFocal, focal);
     gl.uniform2fv(uPos, position);
-    gl.uniform2fv(uSize, size);
+    gl.uniform2fv(uImageSize, image_world_size);
+    gl.uniform1f(uViewportSize, viewport_scale);
+
+    gl.uniform2f(uResolution, gl.canvas.width, gl.canvas.height);
+
     gl.clear(gl.COLOR_BUFFER_BIT);
     drawQuad(gl, program);
   }

@@ -1,9 +1,10 @@
 //import { initRenderer, loadShaderFromURL } from './render/common.js';
 import { loadDistortionShader } from './render/distortion_shader.js';
 import { loadPrismShader } from './render/prism_shader.js';
+import { loadRainbowShader } from './render/rainbow_shader.js';
 
 let currentSim = 'distortion';
-let currentMap = 'task_6';
+let currentMap = 'task_5';
 let gl = null;
 
 async function main() {
@@ -23,8 +24,12 @@ async function main() {
       btn.classList.add('active');
       currentSim = btn.dataset.sim;
 
-      document.getElementById('distortion-tabs').style.display =
+      document.getElementById('lens-controls').style.display =
         currentSim === 'distortion' ? 'block' : 'none';
+      document.getElementById('rainbow-controls').style.display =
+        currentSim === 'rainbow' ? 'block' : 'none';
+      document.getElementById('prism-controls').style.display =
+        currentSim === 'prism' ? 'block' : 'none';
 
       await updateRenderer();
     });
@@ -41,14 +46,23 @@ async function main() {
   });
 }
 
+let lastSim = null;
+let lastMap = null;
+
 async function updateRenderer() {
+  if (currentSim === lastSim && currentMap === lastMap) return;
+
   if (currentSim === 'distortion') {
     await loadDistortionShader(gl, currentMap);
   } else if (currentSim === 'prism') {
     await loadPrismShader(gl);
   } else if (currentSim === 'rainbow') {
-    return
+    await loadRainbowShader(gl);
   }
+
+  lastSim = currentSim;
+  lastMap = currentMap;
 }
 
-main();
+//main();
+document.addEventListener('DOMContentLoaded', main);

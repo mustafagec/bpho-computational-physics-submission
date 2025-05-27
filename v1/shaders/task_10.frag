@@ -4,13 +4,17 @@ precision mediump float;
 uniform sampler2D u_image;
 uniform vec2 u_resolution;
 uniform float u_focal_length;
-uniform vec2 u_image_position;
+//uniform vec2 u_image_position;
 uniform vec2 u_image_size;
+uniform float u_rf;
+uniform float u_arc_deg;
+uniform float u_viewport_size;
 
 out vec4 outColor;
 
-const float scale = 0.125f;
+//const float scale = 0.125f;
 
+const float pi = 3.14159265358979323846264338328;
 
 
 // inverse mapping function ------------------------------------------------------
@@ -18,75 +22,121 @@ const float scale = 0.125f;
 vec2 inverse_map(vec2 mapped_pos) {
     float X = mapped_pos.x;
     float Y = mapped_pos.y;
-    float f = u_focal_length;
 
-    if (abs(X) < 0.001) return vec2(0.0);
-    
+    float Rf = u_rf;
+    float arc_rad = u_arc_deg * pi / 180.0;
+    float w = u_image_size.x;
+    float h = u_image_size.y;
 
-    // calculate the inverse of x,y --> X,Y
+    float r = length(vec2(X, Y));
+    float theta = atan(Y, X);
 
-    float x = -X;
-    float y = Y;
-    
+    float theta_shifted = theta + arc_rad / 2.0;
+
+    // Reject points outside the arc
+    if (theta_shifted < 0.0 || theta_shifted > arc_rad || r < 1.0 || r > 1.0 + Rf) {
+        // Return invalid UV outside image bounds
+        return vec2(-1.0, -1.0);
+    }
+
+    float x = theta_shifted / arc_rad * w;
+    float y = (r - 1.0) / Rf * h;
+
     return vec2(x, y);
 }
 
 //---------------------------------------------------------------------------------
 
 void main() {
+    //vec2 u_image_position = vec2(0, 0);
     vec2 uv = gl_FragCoord.xy / u_resolution;
-    vec2 world_pos = (uv - 0.5) * (1.0 / scale); 
-    
-    // Draw the original image
-    vec2 original_space = (uv - 0.5) / scale; // Convert to -1 to 1 space
-    
-    // Check if we're in the original image area
-    bool in_original_image = 
-        original_space.x >= u_image_position.x && 
-        original_space.x <= u_image_position.x + u_image_size.x &&
-        original_space.y >= u_image_position.y && 
-        original_space.y <= u_image_position.y + u_image_size.y;
-    
-    if (in_original_image) {
-        //calculate texture coordinates for the original image
-        vec2 image_uv = (original_space - u_image_position) / u_image_size;
-        image_uv = image_uv * vec2(1.0, -1.0) + vec2(0.0, 1.0); // Flip Y and normalize to 0-1
-        outColor = texture(u_image, image_uv);
-        return;
-    }
-    
-    vec2 obj_pos = inverse_map(world_pos);
-    
-    bool in_distorted_area = 
-        obj_pos.x >= u_image_position.x && 
-        obj_pos.x <= u_image_position.x + u_image_size.x &&
-        obj_pos.y >= u_image_position.y && 
-        obj_pos.y <= u_image_position.y + u_image_size.y &&
-        obj_pos.x > u_focal_length; // Points must be beyond focal length
-    
-    if (in_distorted_area) {
-        // Calculate texture coordinates for the original image
-        vec2 image_uv = (obj_pos - u_image_position) / u_image_size;
-        image_uv = image_uv * vec2(1.0, -1.0) + vec2(0.0, 1.0); // Flip Y and normalize to 0-1
-        outColor = texture(u_image, image_uv);
-        return;
-    }
-    
-    //construction lines -----------------------------------------------------------
 
-    /* blue focal line */
-    if (abs(world_pos.x) < 0.03 && abs(world_pos.y) < 1.5) {
-        outColor = vec4(0.0, 0.0, 1.0, 0.3);
-        return;
-    }
+    //float vertical_world_size = 6.0;
+    float pixels_per_unit = u_resolution.y / u_viewport_size; // pixels per world unit
+    float scale = 1.0 / pixels_per_unit; // world units per pixel
+
+    float aspect = u_resolution.x / u_resolution.y;
+    vec2 world_size = vec2(aspect, 1.0) * u_viewport_size;
+
+    vec2 world_pos = (uv - 0.5) * world_size;
     
-    /* focal points */
-    if (length(world_pos - vec2(u_focal_length, 0.0)) < 0.05 || 
-        length(world_pos - vec2(-u_focal_length, 0.0)) < 0.05) {
+
+    /* original image rendering */
+
+    vec2 u_image_position = vec2(0.0, 0.0);
+
+    float image_aspect = u_image_size.x / u_image_size.y;
+    float circle_radius = 1.0;
+
+    float diag = sqrt(image_aspect * image_aspect + 1.0);
+    float full_diag = 2.0; // Diameter of unit circle, corners on circle radius=1
+
+    float height = full_diag / diag;
+    float width = image_aspect * height;
+
+    vec2 image_display_size = vec2(width, height);
+
+    bool in_original_image = 
+        world_pos.x >= u_image_position.x - image_display_size.x / 2.0 &&
+        world_pos.x <= u_image_position.x + image_display_size.x / 2.0 &&
+        world_pos.y >= u_image_position.y - image_display_size.y / 2.0 &&
+        world_pos.y <= u_image_position.y + image_display_size.y / 2.0;
+
+    vec2 base_pos = u_image_position + vec2(0.0, -image_display_size.y / 2.0);
+    vec2 shifted_pos = world_pos - base_pos;
+
+    if (length(shifted_pos) < 0.05) {
         outColor = vec4(1.0, 0.0, 0.0, 1.0);
         return;
     }
+
+    if (in_original_image) {
+        // original image rendering remains the same
+        vec2 image_uv = (world_pos - (u_image_position - image_display_size / 2.0)) / image_display_size;
+        image_uv = image_uv * vec2(1.0, -1.0) + vec2(0.0, 1.0); // Flip Y
+        outColor = texture(u_image, image_uv);
+        return;
+    } else {
+        // Shift world_pos by base_pos for mapping
+        
+
+        vec2 mapped_uv = inverse_map(vec2(-shifted_pos.y, shifted_pos.x));
+        vec2 norm_uv = mapped_uv / u_image_size;
+        norm_uv.y = 1.0 - norm_uv.y;
+
+        if (all(greaterThanEqual(norm_uv, vec2(0.0))) && all(lessThanEqual(norm_uv, vec2(1.0)))) {
+            outColor = texture(u_image, norm_uv);
+            return;
+        }
+    }
     
+
+
+    //construction lines -----------------------------------------------------------
+    
+    /* unit circle */
+    //float dist = length((uv - 0.5) * 2.0);
+
+    
+    float border = 0.1 / u_resolution.x / scale;
+
+    float dist = length(world_pos);
+
+    if (dist >= 1.0 - border && dist <= 1.0 + border) {
+        outColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return;
+    }
+    
+    /* gridlines */
+    float spacing = 1.0;
+    float line_thickness = 0.02;
+
+    if (abs(mod(world_pos.x, spacing)) < line_thickness ||
+        abs(mod(world_pos.y, spacing)) < line_thickness) {
+        outColor = vec4(0.82, 0.85, 0.85, 1.0);
+        return;
+    }
+
     /* background colour */
     outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
