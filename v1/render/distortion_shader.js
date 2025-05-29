@@ -48,7 +48,7 @@ export async function loadDistortionShader(gl, task) {
   const program = shaderPrograms[task];
   gl.useProgram(program);
 
-  setupLensControls(gl, program, task);
+  setupLensControls(gl, program);
 
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -56,7 +56,7 @@ export async function loadDistortionShader(gl, task) {
   drawQuad(gl, program);
 }
 
-async function setupLensControls(gl, program, task) {
+async function setupLensControls(gl, program) {
   //const lensControls = document.getElementById('lens-controls');
   const task10Controls = document.getElementById('task10-controls');
 
@@ -69,7 +69,7 @@ async function setupLensControls(gl, program, task) {
   const uFocal = gl.getUniformLocation(program, 'u_focal_length');
   const uPos = gl.getUniformLocation(program, 'u_image_position');
   const uImageSize = gl.getUniformLocation(program, 'u_image_size');
-  const uViewportSize = gl.getUniformLocation(program, 'u_viewport_size')
+  const uViewportSize = gl.getUniformLocation(program, 'u_viewport_size');
   const uImage = gl.getUniformLocation(program, 'u_image');
   const uRf = gl.getUniformLocation(program, 'u_rf');
   const uArcDeg = gl.getUniformLocation(program, 'u_arc_deg');

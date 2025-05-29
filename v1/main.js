@@ -3,7 +3,7 @@ import { loadDistortionShader } from './render/distortion_shader.js';
 import { loadPrismShader } from './render/prism_shader.js';
 import { loadRainbowShader } from './render/rainbow_shader.js';
 
-let currentSim = 'distortion';
+let currentSim = 'prism';
 let currentMap = 'task_5';
 let gl = null;
 
@@ -30,6 +30,7 @@ async function main() {
         currentSim === 'rainbow' ? 'block' : 'none';
       document.getElementById('prism-controls').style.display =
         currentSim === 'prism' ? 'block' : 'none';
+      document.getElementById('distortion-tabs').style.display = currentSim === 'distortion' ? 'block' : 'none';
 
       await updateRenderer();
     });
@@ -53,6 +54,7 @@ async function updateRenderer() {
   if (currentSim === lastSim && currentMap === lastMap) return;
 
   if (currentSim === 'distortion') {
+    
     await loadDistortionShader(gl, currentMap);
   } else if (currentSim === 'prism') {
     await loadPrismShader(gl);

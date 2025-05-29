@@ -4,14 +4,14 @@ import { initRenderer, loadShaderFromURL } from './common.js';
 
 function f_THz_to_rgb(frequency) {
   const colorMap = [
-    { f: 790, rgb: [0.5, 0, 0] },   // Deep Red
-    { f: 680, rgb: [1.0, 0.0, 0.0] }, // Red
-    { f: 620, rgb: [1.0, 0.5, 0.0] }, // Orange
-    { f: 600, rgb: [1.0, 1.0, 0.0] }, // Yellow
-    { f: 530, rgb: [0.0, 1.0, 0.0] }, // Green
-    { f: 510, rgb: [0.0, 1.0, 1.0] }, // Cyan
-    { f: 480, rgb: [0.0, 0.0, 1.0] }, // Blue
-    { f: 405, rgb: [0.5, 0.0, 1.0] }  // Violet
+    { f: 405, rgb: [0.5, 0.0, 1.0] },  // Violet
+    { f: 480, rgb: [0.0, 0.0, 1.0] },  // Blue
+    { f: 510, rgb: [0.0, 1.0, 1.0] },  // Cyan
+    { f: 530, rgb: [0.0, 1.0, 0.0] },  // Green
+    { f: 600, rgb: [1.0, 1.0, 0.0] },  // Yellow
+    { f: 620, rgb: [1.0, 0.5, 0.0] },  // Orange
+    { f: 680, rgb: [1.0, 0.0, 0.0] },  // Red
+    { f: 790, rgb: [0.5, 0.0, 0.0] },  // Deep Red
   ];
 
   if (frequency < 405 || frequency > 790) return [0, 0, 0];
@@ -23,10 +23,12 @@ function f_THz_to_rgb(frequency) {
     const rgb2 = colorMap[i + 1].rgb;
 
     if (frequency >= f1 && frequency <= f2) {
-      const t = (frequency - f2) / (f1 - f2);
-      const r = rgb1[0] * t + rgb2[0] * (1 - t);
-      const g = rgb1[1] * t + rgb2[1] * (1 - t);
-      const b = rgb1[2] * t + rgb2[2] * (1 - t);
+      const t = (frequency - f1) / (f2 - f1);
+
+      const r = rgb1[0] * (1 - t) + rgb2[0] * t;
+      const g = rgb1[1] * (1 - t) + rgb2[1] * t;
+      const b = rgb1[2] * (1 - t) + rgb2[2] * t;
+
       return [r, g, b];
     }
   }
@@ -38,37 +40,47 @@ function f_THz_to_rgb(frequency) {
 /* initial variables */
 let pi = Math.PI
 
-let c_point = [0, 0];//change to (w/2, h - r * cos(e) * sin(alpha))
+let w = 800;
+let h = 600;
+
+let height = 0;
+
 let numBands = 50;
-let alpha = pi/36; //5 deg
+let alpha_deg = 5; //5 deg
 let viewport_scale = 6.0;
 let data; // = new Float32Array(numBands*2 * 4); // vec4 per sample
-let distance = 1.0;
-let height = 0;
-let spread = 0.2;
+let rainbow_distance = 8.0;
+let c_point = [0, 0];
+//let c_point = [0, -h/2 + height - rainbow_distance * Math.cos(epsilon) * Math.sin(alpha)];//change to (w/2, h - r * cos(e) * sin(alpha))
+
+let spread = 0.005;
 
 /* cpu computation */
 function recompute_bands(gl) {
   //clear data
   data = new Float32Array(numBands*2 * 4);
 
+  let alpha_rad = alpha_deg * pi/180;
+
   //recompute distance-rgb pair data
   for (let i = 0; i < numBands; i++) {
     //(distance, r, g, b)
     //data must be recomputed when a change is made to num_bands, distance (r), alpha
     
-    let f_THz = 405 + (i / numBands) * 385;
-    let f_PHz = f_THz / Math.pow(10, -3);
+    let f_THz = 405.0 + (i / numBands) * 385.0;
+    
+    let f_PHz = f_THz / 1000.0;
 
     const [rCol, gCol, bCol] = f_THz_to_rgb(f_THz);
 
-    let n = Math.pow(Math.pow(1.731 - 0.261 * (f_PHz), -0.5) + 1, 0.5);
+    let n = Math.pow(1 + 1/Math.pow(1.731 - 0.261 * Math.pow(f_PHz, 2.0), 0.5), 0.5);
+
 
     //primary ----------
     let theta_p = Math.asin(Math.pow((4 - n*n) / 3, 0.5));
     let e_p = 4 * Math.asin(Math.pow((4 - n*n) / 3, 0.5)/ n) - 2 * theta_p;
 
-    let d_p = distance * Math.sin(e_p) * Math.cos(alpha);
+    let d_p = rainbow_distance * Math.sin(e_p) * Math.cos(alpha_rad);
 
     
     data[i*2 * 4 + 0] = d_p;
@@ -80,7 +92,7 @@ function recompute_bands(gl) {
     let theta_s = Math.asin(Math.pow((9 - n*n) / 8, 0.5));
     let e_s = pi - 6 * Math.asin(Math.pow((9 - n*n) / 8, 0.5) / n) + 2 * theta_s;
 
-    let d_s = distance * Math.sin(e_s) * Math.cos(alpha);
+    let d_s = rainbow_distance * Math.sin(e_s) * Math.cos(alpha_rad);
 
     data[(i*2 + 1) * 4 + 0] = d_s;
     data[(i*2 + 1) * 4 + 1] = rCol;
@@ -103,8 +115,8 @@ function recompute_bands(gl) {
   );
 
   /* settings */
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 
   //bind
@@ -150,7 +162,13 @@ function drawQuad(gl, program) {
 
 /* shader initialisation */
 export async function loadRainbowShader(gl) {
-  gl.getExtension('EXT_color_buffer_float');
+  if (!gl.getExtension('EXT_color_buffer_float')) {
+    console.error('EXT_color_buffer_float not supported!');
+  }
+  if (!gl.getExtension('OES_texture_float_linear')) {
+    console.error('OES_texture_float_linear not supported!');
+  }
+
   clearListeners();
   
   const vs = await loadShaderFromURL('shaders/base.vert');
@@ -184,18 +202,19 @@ async function setupRainbowControls(gl, program) {
   const uBandSpread = gl.getUniformLocation(program, "u_band_spread");
   const uNumBands = gl.getUniformLocation(program, "u_num_bands");
   const uCPoint = gl.getUniformLocation(program, "u_c_point");
-  const uViewportSize = gl.getUniformLocation(program, "u_viewport_size");
+  const uViewportScale = gl.getUniformLocation(program, "u_viewport_scale");
+  //const uRainbowDistance = gl.getUniformLocation(program, "u_rainbow_distance");
 
 
   /* html references */
+  const viewportScaleSlider = document.getElementById("viewport-scale");
+  const viewportScaleLabel = document.getElementById("viewport-scale-value");
+
   const alphaSlider = document.getElementById("alpha-slider");
   const alphaLabel = document.getElementById("alpha-value");
 
   const heightSlider = document.getElementById("height-slider");
   const heightLabel = document.getElementById("height-value");
-
-  const distanceSlider = document.getElementById("distance-slider");
-  const distanceLabel = document.getElementById("distance-value");
 
   const numBandsSlider = document.getElementById("num-bands-slider");
   const numBandsLabel = document.getElementById("num-bands-value");
@@ -203,23 +222,27 @@ async function setupRainbowControls(gl, program) {
   const spreadSlider = document.getElementById("spread-slider");
   const spreadLabel = document.getElementById("spread-value");
 
+  const rainbowDistanceSlider = document.getElementById("rainbow-distance-slider");
+  const rainbowDistanceLabel = document.getElementById("rainbow-distance-value");
+
+
 
   /* listeners */
+  addListener(viewportScaleSlider, 'input', () => {
+    viewport_scale = parseFloat(viewportScaleSlider.value);
+    viewportScaleLabel.textContent = viewport_scale.toFixed(1);
+    triggerDraw();
+  });
+
   addListener(alphaSlider, 'input', () => {
-    alpha = parseFloat(alphaSlider.value);
-    alphaLabel.textContent = alpha.toFixed(1);
+    alpha_deg = parseFloat(alphaSlider.value);
+    alphaLabel.textContent = alpha_deg.toFixed(1);
     triggerDraw();
   });
 
   addListener(heightSlider, 'input', () => {
     height = parseFloat(heightSlider.value);
     heightLabel.textContent = height.toFixed(1);
-    triggerDraw();
-  });
-  
-  addListener(distanceSlider, 'input', () => {
-    distance = parseFloat(distanceSlider.value);
-    distanceLabel.textContent = distance.toFixed(1);
     triggerDraw();
   });
 
@@ -231,7 +254,13 @@ async function setupRainbowControls(gl, program) {
 
   addListener(spreadSlider, 'input', () => {
     spread = parseFloat(spreadSlider.value);
-    spreadLabel.textContent = spread.toFixed(1);
+    spreadLabel.textContent = spread.toFixed(3);
+    triggerDraw();
+  });
+
+  addListener(rainbowDistanceSlider, 'input', () => {
+    rainbow_distance = parseFloat(rainbowDistanceSlider.value);
+    rainbowDistanceLabel.textContent = rainbow_distance.toFixed(1);
     triggerDraw();
   });
 
@@ -245,9 +274,13 @@ async function setupRainbowControls(gl, program) {
 
     gl.uniform2fv(uCPoint, c_point);
 
-    gl.uniform1f(uViewportSize, viewport_scale);
+    gl.uniform1f(uViewportScale, viewport_scale);
+
+    //gl.uniform1f(uRainbowDistance, rainbow_distance);
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     drawQuad(gl, program);
   }
+
+  triggerDraw();
 }

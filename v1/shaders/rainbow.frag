@@ -9,6 +9,8 @@ uniform vec2 u_c_point;
 
 uniform float u_viewport_scale;
 
+//uniform float u_rainbow_distance;
+
 out vec4 outColor;
 
 
@@ -16,30 +18,27 @@ out vec4 outColor;
 
 const float width = 800.0;
 const float height = 600.0;
-
 const float aspect = width / height;
 
 
 
 void main() {
-    outColor = vec4(0.0, 0.0, 0.0, 1.0);
-    return;
-    
     vec2 uv = (gl_FragCoord.xy / vec2(width, height)) * 2.0 - 1.0;
 
-    /* scaling to world size */
     vec2 world_scale = vec2(aspect, 1.0) * u_viewport_scale;
     vec2 pos = uv * world_scale;
 
 
     //colour calculations ----------------
 
-    vec4 colour_sum = vec4(0.0, 0.0, 0.0, 1.0);
+    int total_bands = u_num_bands * 2;
+
+    vec3 colour_sum = vec3(0.0, 0.0, 0.0);
     for (int i = 0; i < 256; ++i) {
-        if (i >= u_num_bands * 2) break;
+        if (i >= total_bands) break;
         
-        float u = float(i) / float(u_num_bands*2 - 1);
-        vec4 band = texture2D(u_bands, vec2(u, 0.5));
+        float u = float(i) / float(total_bands - 1);
+        vec4 band = texture(u_bands, vec2(u, 0.5));
 
         float f_d = band.r; // radius of maximum brightness for a given frequency
         vec3 f_rgb = band.gba;
@@ -47,10 +46,17 @@ void main() {
         float px_d = length(pos - u_c_point); //distance of pixel from c_point
         float delta = px_d - f_d;
         //clamp weight
-        float weight = exp(-pow(delta / u_band_spread, 2));
-        colour_sum += f_rgb * weight;
+        float weight = exp(-pow(delta / u_band_spread, 2.0));
+        colour_sum.rgb += f_rgb * weight;
     }
-    //clamp colour sum
-    outColor = colour_sum;
+
+    outColor = vec4(clamp(colour_sum.rgb, 0.0, 1.0), 1.0);
+    /*
+    for (int i = 0; i < 10; ++i) {
+        float u = float(i) / float(2 * u_num_bands - 1);
+        vec4 band = texture(u_bands, vec2(u, 0.5));
+        // visualize a gradient of colors
+        outColor += vec4(band.gba, 1.0) * 0.1;
+    }*/
     //outColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

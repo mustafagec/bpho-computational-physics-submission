@@ -13,13 +13,13 @@
     <div class="tabs">
       <!-- simulation type -->
       <div class="tab-group">
-        <button class="tab-button active" data-sim="distortion">lens distortions</button>
-        <button class="tab-button" data-sim="prism">prism simulation</button>
+        <button class="tab-button" data-sim="distortion">lens distortions</button>
+        <button class="tab-button active" data-sim="prism">prism simulation</button>
         <button class="tab-button" data-sim="rainbow">rainbow visualisation</button>
       </div>
 
       <!-- pixel mapping operation selection -->
-      <div id="distortion-tabs" class="sub-tab-group">
+      <div id="distortion-tabs" class="sub-tab-group" style="display: none;">
         <button class="sub-tab-button active" data-map="task_5">task 5</button>
         <button class="sub-tab-button" data-map="task_6&7">task 6 & 7</button>
         <button class="sub-tab-button" data-map="task_8">task 8</button>
@@ -72,24 +72,25 @@
           <input type="range" id="height-slider" min="0" max="5" step="0.1" value="0">
         </div>
         <div class="control-row"> <!--r-->
-          <label>distance / m: <span id="distance-value">1</span></label>
-          <input type="range" id="distance-slider" min="0" max="5" step="0.1" value="1">
+          <label>rainbow distance / m: <span id="rainbow-distance-value">8.0</span></label>
+          <input type="range" id="rainbow-distance-slider" min="0" max="30" step="0.05" value="8">
         </div>
-        <div class="control-row"> <!--num_bands-->
+        <div class="control-row" style="display: none;"> <!--num_bands-->
           <label>number of bands: <span id="num-bands-value">50</span></label>
           <input type="range" id="num-bands-slider" min="0" max="128" step="1" value="50">
         </div>
-        <div class="control-row"> <!--spread-->
-          <label>band spread: <span id="spread-value">0.2</span></label>
-          <input type="range" id="spread-slider" min="0.0" max="3.0" step="0.05" value="0.2">
+        <div class="control-row" style="display: none;"> <!--spread-->
+          <label>band spread: <span id="spread-value">0.005</span></label>
+          <input type="range" id="spread-slider" min="0.0" max="0.5" step="0.001" value="0.005">
         </div>
       </div>
 
       <div id="prism-controls" style="display: none;">
         <div class="control-row">
-          <label>angle of incidence / ° : <span id="spread-value">0.2</span></label>
-          <input type="range" id="spread-slider" min="0.0" max="3.0" step="0.05" value="0.2">
+          <label>angle of incidence / ° : <span id="theta-i-value">0.2</span></label>
+          <input type="range" id="theta-i-slider" min="0.0" max="3.0" step="0.05" value="0.2">
         </div>
+        <!--theta_i, alpha, -->
       </div>
     </div>
   </div>
