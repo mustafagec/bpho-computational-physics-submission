@@ -74,18 +74,19 @@ async function setupLensControls(gl, program) {
   const uRf = gl.getUniformLocation(program, 'u_rf');
   const uArcDeg = gl.getUniformLocation(program, 'u_arc_deg');
 
-  let focal = 1.0;
-  let position = isTask10 ? [0.0, 0.0] : [focal + 0.5, -0.5];
+  let focal = 2.0;
+  let position = program === shaderPrograms['task_10'] ? [0.0, 0.0] : ((((program === shaderPrograms['task_8']) || (program === shaderPrograms['task_9']))) ? [0.75, 0.0] : [focal + 0.5, -0.5]);
   let rf = 1.0;
   let arcDeg = 160.0;
-  let viewport_scale = 6.0;
+  let viewport_scale = parseFloat(document.getElementById('viewport-scale').value)
 
   let image_scale = 1.0;
   let aspect;// = 1.0;
   let imgReady = false;
 
   const img = new Image();
-  img.src = '../assets/waifu.jpg';
+  let name = 'what_the_actual_hell_or_should_i_say_heaven.jpg';
+  img.src = `../assets/${name}`;
   img.onload = () => {
     aspect = img.width / img.height;
 
@@ -116,6 +117,9 @@ async function setupLensControls(gl, program) {
   // UI elements
   const focalSlider = document.getElementById('focal-length');
   const focalLabel = document.getElementById('focal-length-value');
+  //document.getElementById('focal-length-control').style.display = ((program === shaderPrograms['task_8']) || (program === shaderPrograms['task_9']) || (program === shaderPrograms['task_10'])) ? 'none' : 'block';
+  document.getElementById('focal-length-control').style.display = (program === shaderPrograms['task_6&7']) ? 'block' : 'none';
+
   const imageScaleSlider = document.getElementById('image-scale');
   const imageScaleLabel = document.getElementById('image-scale-value');
   const viewportScaleLabel = document.getElementById('viewport-scale-value');
@@ -156,8 +160,28 @@ async function setupLensControls(gl, program) {
     triggerDraw();
   });
 
+  //set unique scalings for tasks 8 and 9
+
+  if ((program === shaderPrograms['task_8']) || (program === shaderPrograms['task_9'])) {
+    viewport_scale = 2.2;
+    viewportScaleLabel.textContent = '2.2';
+    viewportScaleSlider.value = '2.2';
+
+    image_scale = 0.3;
+    imageScaleLabel.textContent = '0.3';
+    imageScaleSlider.value = '0.3';
+  } else {
+    viewport_scale = 6.0;
+    viewportScaleLabel.textContent = '6.0';
+    viewportScaleSlider.value = '6.0';
+
+    image_scale = 1.0;
+    imageScaleLabel.textContent = '1.0';
+    imageScaleSlider.value = '1.0';
+  }
+
   // Disable dragging and keys for task 10
-  if (!isTask10) {
+  if (!(program === shaderPrograms['task_10'])) {
     let dragging = false;
     let last = [0, 0];
     const canvas = gl.canvas;
@@ -174,8 +198,11 @@ async function setupLensControls(gl, program) {
       const dx = e.clientX - last[0];
       const dy = e.clientY - last[1];
       last = [e.clientX, e.clientY];
-      position[0] += (8 * dx) / canvas.width;
-      position[1] -= (8 * dy) / canvas.height;
+      //position[0] += (8 * dx) / canvas.width;
+      //position[1] -= (8 * dy) / canvas.height;
+
+      position[0] += (dx / canvas.width) * (canvas.width / canvas.height) * viewport_scale;
+      position[1] -= (dy / canvas.height) * viewport_scale;
       triggerDraw();
     });
 
@@ -200,7 +227,7 @@ async function setupLensControls(gl, program) {
     let width = aspect * height;
     let image_world_size = [width * image_scale, height * image_scale];
 
-    if (isTask10) {
+    if (program === shaderPrograms['task_10']) {
       const diag = 2.0;
       height = diag / Math.sqrt(aspect * aspect + 1);
       width = aspect * height;

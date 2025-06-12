@@ -16,13 +16,14 @@ const float pi = 3.14159265358979323846264338328;
 vec2 inverse_map(vec2 mapped_pos) {
     float X = mapped_pos.x;
     float Y = mapped_pos.y;
-    float f = u_focal_length;
 
-    if (abs(X) < 0.001) return vec2(0.0);
-
-    float x = -X;
-    float y = Y;
     
+    float x = Y / sqrt(X*X + Y*Y);
+    
+    
+    float y = Y * x / X;
+    
+
     return vec2(x, y);
 }
 
@@ -69,15 +70,20 @@ void main() {
 
     //construction lines -----------------------------------------------------------
 
-    /* mirror line */
-    if (abs(world_pos.x) < 0.035) {
-        outColor = vec4(0.1, 0.1, 0.9, 1.0);
+    /* half unit circle */
+    float border = 0.0125 / u_resolution.x / scale;
+
+    float dist = length(world_pos);
+    float r = 0.5;
+
+    if ((dist >= r - border && dist <= r + border) && (world_pos.x <= 0.0)) {
+        outColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 
     /* gridlines */
-    float spacing = 1.0;
-    float line_thickness = 0.02;
+    float spacing = 0.25;
+    float line_thickness = 0.008;
 
     if (abs(mod(world_pos.x, spacing)) < line_thickness ||
         abs(mod(world_pos.y, spacing)) < line_thickness) {

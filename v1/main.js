@@ -31,6 +31,7 @@ async function main() {
       document.getElementById('prism-controls').style.display =
         currentSim === 'prism' ? 'block' : 'none';
       document.getElementById('distortion-tabs').style.display = currentSim === 'distortion' ? 'block' : 'none';
+      document.getElementById('v-scale').style.display = currentSim !== 'rainbow' ? 'block' : 'none';
 
       await updateRenderer();
     });
@@ -54,10 +55,11 @@ async function updateRenderer() {
   if (currentSim === lastSim && currentMap === lastMap) return;
 
   if (currentSim === 'distortion') {
-    
     await loadDistortionShader(gl, currentMap);
+
   } else if (currentSim === 'prism') {
     await loadPrismShader(gl);
+    
   } else if (currentSim === 'rainbow') {
     await loadRainbowShader(gl);
   }

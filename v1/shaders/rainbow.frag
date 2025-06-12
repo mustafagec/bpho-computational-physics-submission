@@ -28,6 +28,11 @@ void main() {
     vec2 world_scale = vec2(aspect, 1.0) * u_viewport_scale;
     vec2 pos = uv * world_scale;
 
+    /* horizon */
+    if ((abs(uv.y) < 0.0035) && mod(pos.x, 0.5) < 0.25) {
+        outColor = vec4(1.0, 1.0, 1.0, 1.0);
+        return;
+    }
 
     //colour calculations ----------------
 
@@ -51,12 +56,5 @@ void main() {
     }
 
     outColor = vec4(clamp(colour_sum.rgb, 0.0, 1.0), 1.0);
-    /*
-    for (int i = 0; i < 10; ++i) {
-        float u = float(i) / float(2 * u_num_bands - 1);
-        vec4 band = texture(u_bands, vec2(u, 0.5));
-        // visualize a gradient of colors
-        outColor += vec4(band.gba, 1.0) * 0.1;
-    }*/
     //outColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

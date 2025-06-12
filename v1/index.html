@@ -29,25 +29,25 @@
     </div>
 
     <div class="controls">
-      <p>controls</p>
+      <p><b>controls</b></p>
 
       <!-- universal controls ------------------------------------------->
-      <div class="control-row">
+      <div class="control-row" id="v-scale">
         <label>viewport scale: <span id="viewport-scale-value">6.0</span></label>
-        <input type="range" id="viewport-scale" min="3.0" max="15.0" step="0.1" value="6.0">
+        <input type="range" id="viewport-scale" min="1.5" max="15.0" step="0.1" value="6.0">
       </div>
 
       <!-- sim specific controls ---------------------------------------->
 
-      <div id="lens-controls">
-        <div class="control-row">
-          <label>focal length: <span id="focal-length-value">1.5</span></label>
-          <input type="range" id="focal-length" min="0.5" max="3.0" step="0.1" value="1.5">
+      <div id="lens-controls" style="display: none;">
+        <div class="control-row" id="focal-length-control">
+          <label>focal length: <span id="focal-length-value">2.0</span></label>
+          <input type="range" id="focal-length" min="0.5" max="5.0" step="0.1" value="2.0">
         </div>
       
         <div class="control-row">
           <label>image scale: <span id="image-scale-value">1.0</span></label>
-          <input type="range" id="image-scale" min="0.5" max="3.0" step="0.1" value="1.0">
+          <input type="range" id="image-scale" min="0.1" max="3.0" step="0.1" value="1.0">
         </div>
 
         <div id="task10-controls" style="display: none;">
@@ -55,6 +55,7 @@
             <label>Rf: <span id="rf-value">1.0</span></label>
             <input type="range" id="rf-slider" min="0.1" max="5.0" step="0.1" value="1.0">
           </div>
+
           <div class="control-row">
             <label>arc / ° : <span id="arc-value">160</span></label>
             <input type="range" id="arc-slider" min="30" max="360" step="1" value="160">
@@ -85,12 +86,16 @@
         </div>
       </div>
 
-      <div id="prism-controls" style="display: none;">
+      <div id="prism-controls">
         <div class="control-row">
-          <label>angle of incidence / ° : <span id="theta-i-value">0.2</span></label>
-          <input type="range" id="theta-i-slider" min="0.0" max="3.0" step="0.05" value="0.2">
+          <label>angle of incidence / ° : <span id="theta-i-value">5.0</span></label>
+          <input type="range" id="theta-i-slider" min="0.0" max="85.0" step="0.05" value="5.0">
         </div>
-        <!--theta_i, alpha, -->
+        
+        <div class="control-row">
+          <label>alpha / ° : <span id="prism-alpha-value">45.0</span></label>
+          <input type="range" id="prism-alpha-slider" min="10.0" max="60.0" step="0.5" value="45.0">
+        </div>
       </div>
     </div>
   </div>
@@ -100,4 +105,3 @@
   <script type="module" src="main.js"></script>
 </body>
 </html>
-<!--SIM 😲😲😲😲😲😲😲😲😲😲😲😲😲😲-->
