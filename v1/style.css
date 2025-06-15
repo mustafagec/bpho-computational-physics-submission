@@ -1,26 +1,45 @@
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   text-align: center;
   background-color: #1b1c1d;
   color: #eee;
+  margin: 0;
+  padding: 0;
 }
 
+h1 {
+  margin: 30px 0;
+}
+
+/* Canvas styling */
 canvas {
   border: 1px solid #444;
-  margin-top: 0;
   border-radius: 5px;
   user-select: none;
-  -webkit-user-select: none; /* safari */
+  -webkit-user-select: none;
   box-shadow: 5px 5px 5px #00000031;
-  /*position: relative;*/
+  display: block;
+  margin: 0 auto 20px auto;
+}
+
+/* Center tab buttons */
+.tab-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .tab-group, .sub-tab-group {
-  margin: 1em;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5em;
+  margin: 0.5em 0;
 }
 
+/* Button styling */
 .tab-button, .sub-tab-button {
-  margin: 0.2em;
   padding: 0.6em 1em;
   background-color: #333;
   box-shadow: 5px 5px 5px #00000031;
@@ -28,95 +47,69 @@ canvas {
   border: none;
   cursor: pointer;
   border-radius: 5px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .tab-button:hover, .sub-tab-button:hover {
-  margin: 0.2em;
-  padding: 0.6em 1em;
   background-color: #454545;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
 }
 
 .tab-button.active, .sub-tab-button.active {
   background-color: #625050;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .tab-button.active:hover, .sub-tab-button.active:hover {
   background-color: #454545;
 }
 
-h1 {
-  margin-top: 30px;
-  margin-bottom: 30px;
-}
-
+/* Controls box styling */
 .controls {
-  margin: 10px auto;
-  max-width: 400px;
+  margin: 10px auto 40px auto;
+  max-width: 600px;
+  background-color: #222;
+  padding: 10px 50px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px #00000031;
   color: #ccc;
   font-size: 14px;
-  background-color: #222;
-  padding: 10px;
-  border-radius: 5px;
-  width: auto;
-  padding-left: 50px;
-  padding-right: 50px;
-  box-shadow: 5px 5px 5px #00000031;
   min-height: 110px;
+  text-align: left;
 }
 
 .controls p {
   margin: 2px 0;
-}
-
-.sidebar-container {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  /*flex-wrap: wrap;*/ /* Optional: wraps on smaller screens */
-  margin: 0 auto 20px auto;
-  width: 800px;
-  
-}
-
-.sidebar-container > div {
-  flex-shrink: 0;
+  font-weight: bold;
 }
 
 .control-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   padding: 6px 0;
   gap: 10px;
 }
 
-/* Ensure all sliders have consistent size */
+.control-row label {
+  flex: 0 0 200px; /* Fixed width for alignment */
+  text-align: left;
+}
+
+.control-row label span {
+  display: inline-block;
+  min-width: 35px;
+  text-align: right;
+  margin-left: 8px;
+}
+
 input[type="range"] {
   flex: 1;
-  min-width: 200px; /* Prevent resizing on 2-digit -> 3-digit values */
+  min-width: 200px;
   max-width: 100%;
   height: 10px;
 }
 
-/* Make sure task10 controls match the outer controls box layout */
+/* Match nested control layout */
 #task10-controls .control-row {
-  padding: 6px 0; /* Same as default control-row */
+  padding: 6px 0;
   gap: 10px;
-  text-align: right;
-}
-
-.control-row label {
-  display: inline-block;
-  min-width: 140px; /* wider to fit all label text equally */
-}
-
-label span {
-  display: inline-block;
-  min-width: 35px;
-  text-align: right;
 }

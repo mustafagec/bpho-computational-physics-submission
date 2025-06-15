@@ -16,7 +16,7 @@ const float aspect = 800.0 / 600.0;
 
 const float pi = 3.14159265358979323846264338328;
 
-const vec4 prism_colour = vec4(0.3, 0.3, 0.32, 1.0);
+const vec4 prism_colour = vec4(0.15, 0.15, 0.16, 1.0);
 const float prism_height = 4.0;
 
 const float normal_marker_length = 0.7;
@@ -29,7 +29,6 @@ const int beam_subdivisions = 20;
 
 //---------------------------------------------------------
 
-//trace beam for a single subdivision for all frequencies
 
 bool within_line(vec2 pos, vec2 start, vec2 end, float thickness, bool is_dashed) {
     float dash_length = 0.05;
@@ -65,7 +64,7 @@ bool within_line(vec2 pos, vec2 start, vec2 end, float thickness, bool is_dashed
 }
 
 
-bool within_triangle(vec2 pos) {
+bool within_prism(vec2 pos) {
     float x = pos.x;
     float y = pos.y;
     float h = prism_height;
@@ -85,47 +84,45 @@ void main() {
     
 
 
-    //render normal markers --------------------------------------
 
-    //normal at central point of incidence
+    /* point calculations */
+    
+    float c_point_t_x;
+    float c_point_t_y;
+    vec2 c_point_t = vec2(0.0, 0.0);
 
+    
+
+    //render rays ------------------------------------------------
+    
+    /* ray of incidence */
+
+
+    /* internal ray */
+
+
+    /* transmitted ray */
+
+    //render normals ---------------------------------------------
+
+    /* incident normal markers */
     vec2 c_point_i = vec2(-prism_height/2.0 * tan(u_prism_alpha / 2.0), 0.0);
     float delta_x_i = normal_marker_length * cos(u_prism_alpha / 2.0);
     float delta_y_i = normal_marker_length * sin(u_prism_alpha / 2.0);
     vec2 normal_start_i = vec2(c_point_i.x - delta_x_i, c_point_i.y + delta_y_i);
     vec2 normal_end_i = vec2(c_point_i.x + delta_x_i, c_point_i.y - delta_y_i);
 
-    if (within_line(world_pos, normal_start_i, normal_end_i, normal_thickness, true)) {
-        outColor = normal_colour;
-        return;
-    }
-
-
-
-    //normal at central point of transmission
-
-    vec2 c_point_t = vec2(0.0, 0.0);
+    /* transmitted normal markers */
     float delta_x_t = -normal_marker_length * cos(u_prism_alpha / 2.0);
     float delta_y_t = normal_marker_length * sin(u_prism_alpha / 2.0);
     vec2 normal_start_t = vec2(c_point_t.x - delta_x_t, c_point_t.y + delta_y_t);
     vec2 normal_end_t = vec2(c_point_t.x + delta_x_t, c_point_t.y - delta_y_t);
 
-    if (within_line(world_pos, normal_start_t, normal_end_t, normal_thickness, true)) {
+    if (within_line(world_pos, normal_start_i, normal_end_i, normal_thickness, true) || within_line(world_pos, normal_start_t, normal_end_t, normal_thickness, true)) {
         outColor = normal_colour;
         return;
     }
 
-    //render rays ------------------------------------------------
-    
-
-
-    //render prism -----------------------------------------------
-
-    if (within_triangle(world_pos)) {
-        outColor = prism_colour;
-        return;
-    }
-
     /* background colour */
-    outColor = vec4(0.0, 0.0, 0.0, 1.0);
+    outColor = within_prism(world_pos) ? prism_colour : vec4(0.0, 0.0, 0.0, 1.0);
 }

@@ -2,6 +2,7 @@
 import { loadDistortionShader } from './render/distortion_shader.js';
 import { loadPrismShader } from './render/prism_shader.js';
 import { loadRainbowShader } from './render/rainbow_shader.js';
+import { loadRaymarchShader } from './render/raymarching_shader.js';
 
 let currentSim = 'prism';
 let currentMap = 'task_5';
@@ -31,7 +32,9 @@ async function main() {
       document.getElementById('prism-controls').style.display =
         currentSim === 'prism' ? 'block' : 'none';
       document.getElementById('distortion-tabs').style.display = currentSim === 'distortion' ? 'block' : 'none';
-      document.getElementById('v-scale').style.display = currentSim !== 'rainbow' ? 'block' : 'none';
+      document.getElementById('v-scale').style.display = currentSim !== 'rainbow' && currentSim !== 'raymarch' ? 'block' : 'none';
+      document.getElementById('raymarch-controls').style.display =
+        currentSim === 'raymarch' ? 'block' : 'none';
 
       await updateRenderer();
     });
@@ -54,14 +57,19 @@ let lastMap = null;
 async function updateRenderer() {
   if (currentSim === lastSim && currentMap === lastMap) return;
 
+  // Stop raymarching loop when switching away
+  if (lastSim === 'raymarch') {
+    window.__stopRaymarching?.();  // call cleanup
+  }
+
   if (currentSim === 'distortion') {
     await loadDistortionShader(gl, currentMap);
-
   } else if (currentSim === 'prism') {
     await loadPrismShader(gl);
-    
   } else if (currentSim === 'rainbow') {
     await loadRainbowShader(gl);
+  } else if (currentSim === 'raymarch') {
+    await loadRaymarchShader(gl);
   }
 
   lastSim = currentSim;
