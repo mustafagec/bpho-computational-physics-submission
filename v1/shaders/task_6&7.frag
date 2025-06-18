@@ -19,16 +19,23 @@ vec2 inverse_map(vec2 mapped_pos) {
 
     if (abs(X - f) < 0.001) return vec2(0.0);
 
-    /*float x_prime = (f * X) / (X - f);
-    
-    float scale = f / (x_prime - f);
-    if (X > f) {
-        scale *= -1.0;
-    }
-    return vec2(X, Y) * scale;*/
+    float x = f / (1.0 - f/(X));
+    float y = Y * x/X; 
 
-    float x = -f * X / (X - f);
-    float y = Y * X/x; 
+    /*
+    X = xf/(f-x)
+    f-x = xf/X
+    f/x - 1 = f/X
+    1/(f/X + 1) = x/f
+    x = f/(f/X + 1)
+    
+    -X = xf/(f-x)
+    X = xf/(x-f)
+    x-f = xf/X
+    1-f/x = f/X
+    f/(1-f/X) = x
+    */
+
 
     /*
     map_to(x, y):

@@ -87,11 +87,6 @@ void main() {
 
     /* point calculations */
     
-    float c_point_t_x;
-    float c_point_t_y;
-    vec2 c_point_t = vec2(0.0, 0.0);
-
-    
 
     //render rays ------------------------------------------------
     
@@ -106,19 +101,13 @@ void main() {
     //render normals ---------------------------------------------
 
     /* incident normal markers */
-    vec2 c_point_i = vec2(-prism_height/2.0 * tan(u_prism_alpha / 2.0), 0.0);
-    float delta_x_i = normal_marker_length * cos(u_prism_alpha / 2.0);
-    float delta_y_i = normal_marker_length * sin(u_prism_alpha / 2.0);
-    vec2 normal_start_i = vec2(c_point_i.x - delta_x_i, c_point_i.y + delta_y_i);
-    vec2 normal_end_i = vec2(c_point_i.x + delta_x_i, c_point_i.y - delta_y_i);
+    vec2 c_point = vec2(-prism_height/2.0 * tan(u_prism_alpha / 2.0), 0.0);
+    float delta_x = normal_marker_length * cos(u_prism_alpha / 2.0);
+    float delta_y = normal_marker_length * sin(u_prism_alpha / 2.0);
+    vec2 normal_start = vec2(c_point.x - delta_x, c_point.y + delta_y);
+    vec2 normal_end = vec2(c_point.x + delta_x, c_point.y - delta_y);
 
-    /* transmitted normal markers */
-    float delta_x_t = -normal_marker_length * cos(u_prism_alpha / 2.0);
-    float delta_y_t = normal_marker_length * sin(u_prism_alpha / 2.0);
-    vec2 normal_start_t = vec2(c_point_t.x - delta_x_t, c_point_t.y + delta_y_t);
-    vec2 normal_end_t = vec2(c_point_t.x + delta_x_t, c_point_t.y - delta_y_t);
-
-    if (within_line(world_pos, normal_start_i, normal_end_i, normal_thickness, true) || within_line(world_pos, normal_start_t, normal_end_t, normal_thickness, true)) {
+    if (within_line(world_pos, normal_start, normal_end, normal_thickness, true)) {
         outColor = normal_colour;
         return;
     }

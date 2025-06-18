@@ -42,6 +42,11 @@ mat3 rotation_x(float theta) {
 float torus_sdf(vec3 p, float r_1, float r_2) {
     mat3 torus_rotation = rotation_x(pi / 2.0);
     p = torus_rotation * p;
+
+    //repetition
+    //vec3 cellSize = vec3(6.0);
+    //p = fract(p / cellSize) * cellSize - 0.5 * cellSize;
+
     vec2 q = vec2(length(p.xz) - r_1, p.y);
     return length(q) - r_2;
 }

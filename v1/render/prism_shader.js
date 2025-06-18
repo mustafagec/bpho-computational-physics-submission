@@ -1,9 +1,83 @@
 import { initRenderer, loadShaderFromURL } from './common.js';
+import { vec2, mat2 } from 'gl-matrix';
 
+
+/* uniform variables */
 
 let viewport_scale = 6.0;
 let alpha_rad = 45.0 * Math.PI/180.0;
 let theta_i_rad = 5.0 * Math.PI/180.0;
+
+let beam_width = 0.2;
+let beam_count = 50;
+//let beam_points = [];
+
+const prism_height = 4.0;
+/*
+function cw_rot(p, theta) { //clockwise vector rotation
+  const rot_mat = mat2.fromValues(Math.cos(theta), Math.sin(theta), -Math.sin(theta), Math.cos(theta));
+  return vec2.transformMat2(vec2.create(), p, rot_mat);
+}
+
+
+function raycast(ray_origin, ray_dir, line_a, line_b) {
+  const r = vec2.clone(ray_origin);
+  const d = vec2.clone(ray_dir);
+  const a = vec2.clone(line_a);
+  const b = vec2.clone(line_b);
+
+  const v = vec2.create();
+  vec2.sub(v, b, a);
+
+  const denom = d[0] * v[1] - d[1] * v[0];
+
+  if (Math.abs(denom) < 1e-10) {
+    return null;
+  }
+
+  const diff = vec2.create();
+  vec2.sub(diff, a, r);
+
+  const t = (diff[0] * v[1] - diff[1] * v[0]) / denom;
+
+  if (t <= 0) {
+    return null;
+  }
+
+
+  const intersection = vec2.create();
+  vec2.scaleAndAdd(intersection, r, d, t);
+
+  
+  const normal = vec2.fromValues(-v[1], v[0]);
+  vec2.normalize(normal, normal);
+
+  return { point: intersection, normal: normal };
+}
+
+function update_beam_points() { //generate beam start & end points to pass to the shader
+  //get dynamic position of screen corners depending on viewport scale
+
+  let p_0 = vec2.fromValues(-prism_height/2.0 * tan(alpha_rad / 2.0), 0.0);
+
+  let raycast_result = raycast(p_0, cw_rot(, alpha_rad), );
+  if (raycast_result) return;
+
+  let p_1 = raycast_result.point;
+  let n_1 = raycast_result.normal;
+  
+  //incident point to screen edge
+
+  for (let i = 0; i < beam_count; i++) {
+    //interpolate from p_1 - beam_width * beam_count/2 to p_1 + beam_width * beam_count/2
+    //const result = vec2.create();
+    //vec2.lerp(result, a, b, t)
+
+    //for each beam, iterate through all visible frequencies
+    
+  }
+}*/
+
 
 
 let activeListeners = [];
