@@ -16,12 +16,25 @@ const float pi = 3.14159265358979323846264338328;
 vec2 inverse_map(vec2 mapped_pos) {
     float X = mapped_pos.x;
     float Y = mapped_pos.y;
-    float f = u_focal_length;
+    float R = 1.0;//u_focal_length;
 
     if (abs(X) < 0.001) return vec2(0.0);
 
-    float x = -X;
-    float y = Y;
+    
+    X = -X;
+    Y = -Y;
+
+    float alpha = 0.5 * atan(Y, X); 
+    float numerator = R * (Y * cos(alpha) - X * sin(alpha));
+    float denominator = Y - R * sin(alpha);
+    float k = numerator / denominator;
+
+    //float x = -k / cos(2.0 * alpha);
+    float y = -k * sin(2.0 * alpha);
+
+    //float alpha = 0.5 * atan(Y/X);
+    //float x = (cos(2.0 * alpha) * (Y*cos(alpha) - X*sin(alpha))) / (Y - sin(alpha));
+    float x = y/Y * X;
     
     return vec2(x, y);
 }

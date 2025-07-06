@@ -83,6 +83,14 @@ function setupRaymarchControls(gl, program) {
     const uR1 = gl.getUniformLocation(program, 'radius_1')
     const uR2 = gl.getUniformLocation(program, 'radius_2')
 
+    const fractCheckbox = document.getElementById('fract-toggle');
+    const uFractToggle = gl.getUniformLocation(program, 'fract_toggle');
+
+    let fract_toggle = false;
+    addListener(fractCheckbox, 'change', () => {
+        fract_toggle = fractCheckbox.checked;
+    });
+
     addListener(fovSlider, 'input', () => {
         fov_deg = parseFloat(fovSlider.value);
         fovLabel.textContent = `${fov_deg.toFixed(1)}°`;
@@ -111,6 +119,7 @@ function setupRaymarchControls(gl, program) {
         gl.uniform1f(uR2, radius_2);
         gl.uniform1f(uTime, time * 0.001);
         gl.uniform3f(uRes, gl.canvas.width, gl.canvas.height, 1.0);
+        gl.uniform1i(uFractToggle, fract_toggle ? 1 : 0);
     }
 
     window.__sendRaymarchUniforms = sendUniforms;

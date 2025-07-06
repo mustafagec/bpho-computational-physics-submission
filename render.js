@@ -2,40 +2,6 @@ import { initRenderer, loadShaderFromURL } from './common.js';
 
 
 
-function f_THz_to_rgb(frequency) {
-
-  const colorMap = [
-    { f: 405, rgb: [0.5, 0.0, 0.0] },  // Deep Red
-    { f: 480, rgb: [1.0, 0.0, 0.0] },  // Red
-    { f: 510, rgb: [1.0, 127.0/255.0, 0.0] },  // Orange
-    { f: 530, rgb: [1.0, 1.0, 0.0] },  // Yellow
-    { f: 600, rgb: [0.0, 1.0, 0.0] },  // Green
-    { f: 620, rgb: [0.0, 1.0, 1.0] },  // Cyan
-    { f: 680, rgb: [0.0, 0.0, 1.0] },  // Blue
-    { f: 790, rgb: [127.0/255.0, 0.0, 1.0] },  // Violet
-  ];
-
-  if (frequency < 405 || frequency > 790) return [0, 0, 0];
-
-  for (let i = 0; i < colorMap.length - 1; i++) {
-    const f1 = colorMap[i].f;
-    const f2 = colorMap[i + 1].f;
-    const rgb1 = colorMap[i].rgb;
-    const rgb2 = colorMap[i + 1].rgb;
-
-    if (frequency >= f1 && frequency <= f2) {
-      const t = (frequency - f1) / (f2 - f1);
-
-      const r = rgb1[0] * (1 - t) + rgb2[0] * t;
-      const g = rgb1[1] * (1 - t) + rgb2[1] * t;
-      const b = rgb1[2] * (1 - t) + rgb2[2] * t;
-
-      return [r, g, b];
-    }
-  }
-
-  return [0, 0, 0];
-}
 
 /* initial variables */
 let pi = Math.PI
@@ -182,7 +148,7 @@ export async function loadRainbowShader(gl) {
 }
 
 
-// input initialisation ------------------------------------------------------------------- //
+// input initialisation ------------------------------------------------------------
 
 async function setupRainbowControls(gl, program) {
 

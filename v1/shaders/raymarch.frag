@@ -9,6 +9,8 @@ uniform float fov;
 uniform float radius_1;
 uniform float radius_2;
 
+uniform int fract_toggle;
+
 
 out vec4 outColor;
 
@@ -17,9 +19,11 @@ out vec4 outColor;
 
 const float pi = 3.14159265358979323846264338328;
 
+const int max_marches = 380;
+const float max_ray_dist = 100.0;
 
 
-
+//camera transformation functions ---------------------------------------
 
 mat3 rotation_y(float theta) {
     return mat3(
@@ -37,15 +41,34 @@ mat3 rotation_x(float theta) {
     );
 }
 
-//sdf functions -----------------------------
+void get_camera_ray(vec2 uv, out vec3 ray_origin, out vec3 ray_dir) {
+    float aspect = iResolution.x / iResolution.y;
+
+    float fov_rad = radians(fov);
+    float focal_length = 1.0 / tan(fov_rad / 2.0);
+
+    vec3 forward = normalize(vec3(uv * vec2(aspect, 1.0), focal_length));
+
+    float angle = iTime * 2.0 * pi / 5.0;
+    mat3 cam_rot = rotation_y(angle);
+    vec3 cam_pos = vec3(0.0, 0.0, -3.0);
+
+    ray_origin = cam_rot * cam_pos;
+    ray_dir = normalize(cam_rot * forward);
+}
+
+
+//sdf functions ---------------------------------------------------------
 
 float torus_sdf(vec3 p, float r_1, float r_2) {
     mat3 torus_rotation = rotation_x(pi / 2.0);
     p = torus_rotation * p;
 
     //repetition
-    //vec3 cellSize = vec3(6.0);
-    //p = fract(p / cellSize) * cellSize - 0.5 * cellSize;
+    if (fract_toggle == 1) {
+        vec3 cellSize = vec3(6.0);
+        p = fract(p / cellSize) * cellSize - 0.5 * cellSize;
+    }
 
     vec2 q = vec2(length(p.xz) - r_1, p.y);
     return length(q) - r_2;
@@ -65,28 +88,8 @@ vec3 estimate_normal(vec3 p) {
 }
 
 
-//camera transformation functions ------------
 
-void get_camera_ray(vec2 uv, out vec3 ray_origin, out vec3 ray_dir) {
-    float aspect = iResolution.x / iResolution.y;
-
-    float fov_rad = radians(fov);
-    float focal_length = 1.0 / tan(fov_rad / 2.0);
-
-    vec3 forward = normalize(vec3(uv * vec2(aspect, 1.0), focal_length));
-
-    float angle = iTime * 2.0 * pi / 5.0;
-    mat3 cam_rot = rotation_y(angle);
-    vec3 cam_pos = vec3(0.0, 0.0, -3.0);
-
-    ray_origin = cam_rot * cam_pos;
-    ray_dir = normalize(cam_rot * forward);
-}
-
-
-
-
-//main ----------------------------------------
+//main ------------------------------------------------------------------
 
 
 void main() {
@@ -100,7 +103,7 @@ void main() {
     bool hit = false;
     
     //march
-    for (int i = 0; i < 80; i++) {
+    for (int i = 0; i < max_marches; i++) {
         vec3 pos = ray_origin + ray_dir * d_sum;
         
         float d = scene_sdf(pos);
@@ -111,7 +114,7 @@ void main() {
             hit = true;
             break;
         }
-        if (d_sum > 100.0) break;
+        if (d_sum > max_ray_dist) break;
     }
     
     vec3 col = vec3(0.0);
@@ -124,6 +127,9 @@ void main() {
         vec3 light_color = vec3(1.0);//vec3(1.0, 0.95, 0.8);
         vec3 light_dir = normalize(light_pos - hit_pos);
 
+
+        //apply lighting models -----------------------------------------
+        
         //Lambertian diffuse
         float diff = max(dot(normal, light_dir), 0.0);
 

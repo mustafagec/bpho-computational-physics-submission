@@ -19,30 +19,17 @@ vec2 inverse_map(vec2 mapped_pos) {
 
     if (abs(X - f) < 0.001) return vec2(0.0);
 
-    float x = f / (1.0 - f/(X));
+    float x;
+
+    if (X < 0.0) {
+        x = f / (1.0 - f/(-X));
+    } else {
+        x = f / (1.0 - f/(-X));
+        //for task 7 img scale = 0.3, focal length = 1.5
+    }
+
     float y = Y * x/X; 
-
-    /*
-    X = xf/(f-x)
-    f-x = xf/X
-    f/x - 1 = f/X
-    1/(f/X + 1) = x/f
-    x = f/(f/X + 1)
     
-    -X = xf/(f-x)
-    X = xf/(x-f)
-    x-f = xf/X
-    1-f/x = f/X
-    f/(1-f/X) = x
-    */
-
-
-    /*
-    map_to(x, y):
-    X = (-f / (x - f)) * x * np.where(x > f, 1, 0)
-    Y = y/x * X * np.where(x > f, 1, 0)
-    */
-
     return vec2(x, y);
 }
 
@@ -87,22 +74,22 @@ void main() {
         return;
     }
 
-    // Draw construction lines
+    //construction lines -----------------------------------------------
 
-    // Blue focal line
+    //lens
     if (abs(world_pos.x) < 0.02 && abs(world_pos.y) < 1.5) {
         outColor = vec4(0.1, 0.1, 0.9, 1.0);
         return;
     }
 
-    // Focal points (red)
+    //focal points
     if (length(world_pos - vec2(u_focal_length, 0.0)) < 0.05 || 
         length(world_pos - vec2(-u_focal_length, 0.0)) < 0.05) {
         outColor = vec4(0.95, 0.1, 0.1, 1.0);
         return;
     }
 
-    // Grid lines
+    //gridlines
     float spacing = 1.0;
     float line_thickness = 0.02;
 
@@ -112,6 +99,6 @@ void main() {
         return;
     }
 
-    // Background
+    //background
     outColor = vec4(1.0);
 }

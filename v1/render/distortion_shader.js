@@ -9,6 +9,12 @@ const shaderPrograms = {
   task_10: null,
 };
 
+
+//fixes:
+//viewport 6.0 default and 4.5 for task 6&7
+//img scale 0.3 task 6&7, focal length 1.5
+
+
 let activeListeners = [];
 function addListener(target, event, handler) {
   target.addEventListener(event, handler);
@@ -74,18 +80,18 @@ async function setupLensControls(gl, program) {
   const uRf = gl.getUniformLocation(program, 'u_rf');
   const uArcDeg = gl.getUniformLocation(program, 'u_arc_deg');
 
-  let focal = 2.0;
+  let focal = 1.5;
   let position = program === shaderPrograms['task_10'] ? [0.0, 0.0] : ((((program === shaderPrograms['task_8']) || (program === shaderPrograms['task_9']))) ? [0.75, 0.0] : [focal + 0.5, -0.5]);
   let rf = 1.0;
   let arcDeg = 160.0;
   let viewport_scale = parseFloat(document.getElementById('viewport-scale').value)
 
-  let image_scale = 1.0;
-  let aspect;// = 1.0;
+  let image_scale = 0.3;
+  let aspect;
   let imgReady = false;
 
   const img = new Image();
-  let name = 'what_the_actual_hell_or_should_i_say_heaven.jpg';
+  let name = 'sybil.png';//'what_the_actual_hell_or_should_i_say_heaven.jpg';
   img.src = `../assets/${name}`;
   img.onload = () => {
     aspect = img.width / img.height;
@@ -175,12 +181,12 @@ async function setupLensControls(gl, program) {
     viewportScaleLabel.textContent = '6.0';
     viewportScaleSlider.value = '6.0';
 
-    image_scale = 1.0;
-    imageScaleLabel.textContent = '1.0';
-    imageScaleSlider.value = '1.0';
+    image_scale = 0.3;
+    imageScaleLabel.textContent = '0.3';
+    imageScaleSlider.value = '0.3';
   }
 
-  // Disable dragging and keys for task 10
+  //disable dragging and keys for task 10
   if (!(program === shaderPrograms['task_10'])) {
     let dragging = false;
     let last = [0, 0];

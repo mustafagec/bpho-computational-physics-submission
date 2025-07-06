@@ -1,10 +1,15 @@
 #version 300 es
 precision mediump float;
 
+#define MAX_LINES 5000  // 50 beams × 50 frequencies × 3 segments
+
 uniform float u_prism_alpha;
 uniform float u_theta_i;
 
 uniform float u_viewport_scale;
+
+uniform sampler2D u_beam_texture;
+uniform int u_segment_count;
 
 out vec4 outColor;
 
@@ -14,9 +19,9 @@ out vec4 outColor;
 
 const float aspect = 800.0 / 600.0;
 
-const float pi = 3.14159265358979323846264338328;
+//const float pi = 3.14159265358979323846264338328;
 
-const vec4 prism_colour = vec4(0.15, 0.15, 0.16, 1.0);
+const vec4 prism_colour = vec4(32.0/255.0, 31.0/255.0, 36.0/255.0, 1.0);
 const float prism_height = 4.0;
 
 const float normal_marker_length = 0.7;
@@ -24,10 +29,22 @@ const float normal_thickness = 0.031;
 const vec4 normal_colour = vec4(0.8, 0.8, 0.85, 1.0);
 
 
-const float beam_thickness = 0.25;
-const int beam_subdivisions = 20;
+const float beam_thickness = 0.04;
+const float edge_softness = 0.02;
 
 //---------------------------------------------------------
+
+vec3 get_segment_data(int i, out vec2 start, out vec2 end) {
+    float tex_height = float(u_segment_count);
+    float y = (float(i) + 0.5) / tex_height;
+
+    vec4 tex1 = texture(u_beam_texture, vec2(0.25, y)); // first texel
+    vec4 tex2 = texture(u_beam_texture, vec2(0.75, y)); // second texel
+
+    start = tex1.xy;
+    end = tex1.zw;
+    return tex2.rgb;
+}
 
 
 bool within_line(vec2 pos, vec2 start, vec2 end, float thickness, bool is_dashed) {
@@ -63,54 +80,55 @@ bool within_line(vec2 pos, vec2 start, vec2 end, float thickness, bool is_dashed
     return true;
 }
 
-
 bool within_prism(vec2 pos) {
     float x = pos.x;
     float y = pos.y;
     float h = prism_height;
 
-    return ((y >= -h/2.0)&&(y<=x/(tan(u_prism_alpha/2.0)) + h/2.0)&&(y<=-x/(tan(u_prism_alpha/2.0)) + h/2.0));
+    return ((y >= -(h/2.0 + 0.2))&&(y<=x/(tan(u_prism_alpha/2.0)) + h/2.0)&&(y<=-x/(tan(u_prism_alpha/2.0)) + h/2.0));
 }
+
 
 void main() {
     vec2 uv = gl_FragCoord.xy / vec2(800.0, 600.0);
     
     vec2 world_size = vec2(aspect, 1.0) * u_viewport_scale;
     vec2 world_pos = (uv - 0.5) * world_size;
-
-
-
-    //calculate central point where the ray leaves the prism (c_point_t)
     
-
-
-
-    /* point calculations */
-    
+    vec3 accumulatedColor = vec3(0.0);
+    float alphaSum = 0.0;
 
     //render rays ------------------------------------------------
     
-    /* ray of incidence */
+    for (int i = 0; i < MAX_LINES; i++) {
+        if (i >= u_segment_count) break;
 
+        vec2 start, end;
+        vec3 color = get_segment_data(i, start, end);
 
-    /* internal ray */
+        vec2 ab = end - start;
+        vec2 ap = world_pos - start;
 
+        float ab_len2 = dot(ab, ab);
+        if (ab_len2 > 0.0) {
+            float t = clamp(dot(ap, ab) / ab_len2, 0.0, 1.0);
+            vec2 closest = start + t * ab;
+            float dist = length(world_pos - closest);
 
-    /* transmitted ray */
+            float half_thickness = beam_thickness * 0.5;
+            float alpha = smoothstep(half_thickness + edge_softness, half_thickness, dist);
 
-    //render normals ---------------------------------------------
+            accumulatedColor += alpha * color;
+            alphaSum += alpha;
+        }
+    }
 
-    /* incident normal markers */
-    vec2 c_point = vec2(-prism_height/2.0 * tan(u_prism_alpha / 2.0), 0.0);
-    float delta_x = normal_marker_length * cos(u_prism_alpha / 2.0);
-    float delta_y = normal_marker_length * sin(u_prism_alpha / 2.0);
-    vec2 normal_start = vec2(c_point.x - delta_x, c_point.y + delta_y);
-    vec2 normal_end = vec2(c_point.x + delta_x, c_point.y - delta_y);
-
-    if (within_line(world_pos, normal_start, normal_end, normal_thickness, true)) {
-        outColor = normal_colour;
+    if (alphaSum > 0.0) {
+        accumulatedColor = accumulatedColor / 20.0;
+        outColor = vec4(accumulatedColor, 1.0);
         return;
     }
+    
 
     /* background colour */
     outColor = within_prism(world_pos) ? prism_colour : vec4(0.0, 0.0, 0.0, 1.0);
