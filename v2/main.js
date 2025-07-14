@@ -1,15 +1,25 @@
-//import { initRenderer, loadShaderFromURL } from './render/common.js';
-import { loadDistortionShader } from './render/distortion_shader.js';
-import { loadPrismShader } from './render/prism_shader.js';
-import { loadRainbowShader } from './render/rainbow_shader.js';
-import { loadRaymarchShader } from './render/raymarching_shader.js';
+
+import { loadShader } from '../render.js';
+
+
 
 let currentSim = 'prism';
 let currentMap = 'task_5';
+
 let gl = null;
 
+
+let tabs = ['distortion', 'rainbow', 'prism', 'raymarch'];
+
+
+
+
 async function main() {
+
+  //initialisation --------------------------------------------------------------
+
   const canvas = document.getElementById('glcanvas');
+  
   gl = canvas.getContext('webgl2');
   if (!gl) {
     alert('WebGL2 is not supported.');
@@ -18,29 +28,29 @@ async function main() {
 
   await updateRenderer();
 
-  // Global tab switching
+
+  //tab switching ----------------------------------------------------------------
+
   document.querySelectorAll('.tab-button').forEach(btn => {
     btn.addEventListener('click', async () => {
       document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentSim = btn.dataset.sim;
 
-      document.getElementById('lens-controls').style.display =
-        currentSim === 'distortion' ? 'block' : 'none';
-      document.getElementById('rainbow-controls').style.display =
-        currentSim === 'rainbow' ? 'block' : 'none';
-      document.getElementById('prism-controls').style.display =
-        currentSim === 'prism' ? 'block' : 'none';
+      for (let tab of tabs) {
+        document.getElementById(`${tab}-controls`).style.display = currentSim === tab ? 'block' : 'none';
+      }
+
       document.getElementById('distortion-tabs').style.display = currentSim === 'distortion' ? 'block' : 'none';
-      document.getElementById('v-scale').style.display = currentSim !== 'rainbow' && currentSim !== 'raymarch' ? 'block' : 'none';
-      document.getElementById('raymarch-controls').style.display =
-        currentSim === 'raymarch' ? 'block' : 'none';
+      //document.getElementById('v-scale').style.display = currentSim !== 'rainbow' && currentSim !== 'raymarch' ? 'block' : 'none';
 
       await updateRenderer();
     });
   });
 
-  // Sub-tab switching for mapping functions
+
+  //sub tab switching ------------------------------------------------------------
+
   document.querySelectorAll('.sub-tab-button').forEach(btn => {
     btn.addEventListener('click', async () => {
       document.querySelectorAll('.sub-tab-button').forEach(b => b.classList.remove('active'));
@@ -51,30 +61,22 @@ async function main() {
   });
 }
 
+
 let lastSim = null;
 let lastMap = null;
 
 async function updateRenderer() {
   if (currentSim === lastSim && currentMap === lastMap) return;
 
-  // Stop raymarching loop when switching away
   if (lastSim === 'raymarch') {
-    window.__stopRaymarching?.();  // call cleanup
+    window.__stopRaymarching?.();//call cleanup
   }
 
-  if (currentSim === 'distortion') {
-    await loadDistortionShader(gl, currentMap);
-  } else if (currentSim === 'prism') {
-    await loadPrismShader(gl);
-  } else if (currentSim === 'rainbow') {
-    await loadRainbowShader(gl);
-  } else if (currentSim === 'raymarch') {
-    await loadRaymarchShader(gl);
-  }
+  loadShader(gl, currentSim, currentMap);
 
   lastSim = currentSim;
   lastMap = currentMap;
 }
 
-//main();
+
 document.addEventListener('DOMContentLoaded', main);

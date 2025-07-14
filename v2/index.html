@@ -20,7 +20,7 @@
 
     <div id="distortion-tabs" class="sub-tab-group" style="display: none;">
       <button class="sub-tab-button active" data-map="task_5">task 5</button>
-      <button class="sub-tab-button" data-map="task_6&7">task 6 & 7</button>
+      <button class="sub-tab-button" data-map="task_6_7">task 6 & 7</button>
       <button class="sub-tab-button" data-map="task_8">task 8</button>
       <button class="sub-tab-button" data-map="task_9">task 9</button>
       <button class="sub-tab-button" data-map="task_10">task 10</button>
@@ -36,81 +36,81 @@
 
     <!-- universal controls -->
     <div class="control-row" id="v-scale">
-      <label>viewport scale: <span id="viewport-scale-value">6.0</span></label>
-      <input type="range" id="viewport-scale" min="1.5" max="15.0" step="0.1" value="6.0">
+      <label>viewport scale: <span id="viewport_scale_value">6.0</span></label>
+      <input type="range" id="viewport_scale_slider" min="1.5" max="15.0" step="0.1" value="6.0">
     </div>
 
     <!-- sim specific controls -->
 
-    <div id="lens-controls" style="display: none;">
+    <div id="distortion-controls" style="display: none;">
       <div class="control-row" id="focal-length-control">
-        <label>focal length: <span id="focal-length-value">1.5</span></label>
-        <input type="range" id="focal-length" min="0.5" max="5.0" step="0.1" value="1.5">
+        <label>focal length: <span id="focal_length_value">1.5</span></label>
+        <input type="range" id="focal_length_slider" min="0.5" max="5.0" step="0.1" value="1.5">
       </div>
     
       <div class="control-row">
-        <label>image scale: <span id="image-scale-value">0.3</span></label>
-        <input type="range" id="image-scale" min="0.1" max="3.0" step="0.05" value="0.3">
+        <label>image scale: <span id="image_scale_value">0.3</span></label>
+        <input type="range" id="image_scale_slider" min="0.1" max="3.0" step="0.05" value="0.3">
       </div>
 
       <div id="task10-controls" style="display: none;">
         <div class="control-row">
-          <label>Rf: <span id="rf-value">1.0</span></label>
-          <input type="range" id="rf-slider" min="0.1" max="5.0" step="0.1" value="1.0">
+          <label>Rf: <span id="rf_value">1.0</span></label>
+          <input type="range" id="rf_slider" min="0.1" max="5.0" step="0.1" value="1.0">
         </div>
         <div class="control-row">
-          <label>arc / ° : <span id="arc-value">160</span></label>
-          <input type="range" id="arc-slider" min="30" max="360" step="1" value="160">
+          <label>arc / ° : <span id="arc_deg_value">160</span></label>
+          <input type="range" id="arc_deg_slider" min="30" max="360" step="1" value="160">
         </div>
       </div>
     </div>
 
     <div id="rainbow-controls" style="display: none;">
       <div class="control-row">
-        <label>anti-solar angle / ° : <span id="alpha-value">5</span></label>
-        <input type="range" id="alpha-slider" min="0" max="90" step="1" value="5">
+        <label>anti-solar angle / ° : <span id="alpha_deg_value">5</span></label>
+        <input type="range" id="alpha_deg_slider" min="0" max="90" step="1" value="5">
       </div>
       <div class="control-row">
-        <label>height / m: <span id="height-value">0</span></label>
-        <input type="range" id="height-slider" min="0" max="5" step="0.1" value="0">
+        <label>height / m: <span id="observer_height_value">0</span></label>
+        <input type="range" id="observer_height_slider" min="0" max="5" step="0.1" value="0">
       </div>
       <div class="control-row">
-        <label>rainbow distance / m: <span id="rainbow-distance-value">8.0</span></label>
-        <input type="range" id="rainbow-distance-slider" min="0" max="30" step="0.05" value="8">
+        <label>rainbow distance / m: <span id="rainbow_distance_value">8.0</span></label>
+        <input type="range" id="rainbow_distance_slider" min="0" max="30" step="0.05" value="8">
       </div>
       <div class="control-row" style="display: none;">
-        <label>number of bands: <span id="num-bands-value">50</span></label>
-        <input type="range" id="num-bands-slider" min="0" max="128" step="1" value="50">
+        <label>number of bands: <span id="num_bands_value">50</span></label>
+        <input type="range" id="num_bands_slider" min="0" max="128" step="1" value="50">
       </div>
       <div class="control-row" style="display: none;">
-        <label>band spread: <span id="spread-value">0.005</span></label>
-        <input type="range" id="spread-slider" min="0.0" max="0.5" step="0.001" value="0.005">
+        <label>band spread: <span id="spread_value">0.005</span></label>
+        <input type="range" id="spread_slider" min="0.0" max="0.5" step="0.001" value="0.005">
       </div>
     </div>
 
     <div id="prism-controls">
       <div class="control-row">
-        <label>angle of incidence / ° : <span id="theta-i-value">16.7</span></label>
-        <input type="range" id="theta-i-slider" min="0.0" max="70.0" step="0.005" value="16.7">
+        <label>angle of incidence / ° : <span id="theta_i_deg_value">16.7</span></label>
+        <input type="range" id="theta_i_deg_slider" min="0.0" max="70.0" step="0.0001" value="16.7">
       </div>
       <div class="control-row">
-        <label>alpha / ° : <span id="prism-alpha-value">60.0</span></label>
-        <input type="range" id="prism-alpha-slider" min="10.0" max="60.0" step="0.005" value="60.0">
+        <label>alpha / ° : <span id="prism_alpha_value">60.0</span></label>
+        <input type="range" id="prism_alpha_slider" min="10.0" max="60.0" step="0.0001" value="60.0">
       </div>
     </div>
 
     <div id="raymarch-controls" style="display: none;">
       <div class="control-row">
-        <label>field of view / ° : <span id="fov-value">70.0</span></label>
-        <input type="range" id="fov-slider" min="30.0" max="960.0" step="0.5" value="70.0">
+        <label>field of view / ° : <span id="fov_deg_value">70.0</span></label>
+        <input type="range" id="fov_deg_slider" min="30.0" max="960.0" step="0.5" value="70.0">
       </div>
       <div class="control-row">
-        <label>radius_1 / m : <span id="r1-value">1.0</span></label>
-        <input type="range" id="r1-slider" min="0.1" max="3.0" step="0.01" value="1.0">
+        <label>radius_1 / m : <span id="r0_value">1.0</span></label>
+        <input type="range" id="r0_slider" min="0.1" max="3.0" step="0.01" value="1.0">
       </div>
       <div class="control-row">
-        <label>radius_2 / m : <span id="r2-value">0.5</span></label>
-        <input type="range" id="r2-slider" min="0.05" max="1.0" step="0.01" value="0.5">
+        <label>radius_2 / m : <span id="r1_value">0.5</span></label>
+        <input type="range" id="r1_slider" min="0.05" max="1.0" step="0.01" value="0.5">
       </div>
       <div class="control-row">
         <label>
