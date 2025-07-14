@@ -80,13 +80,13 @@ async function setupLensControls(gl, program) {
   const uRf = gl.getUniformLocation(program, 'u_rf');
   const uArcDeg = gl.getUniformLocation(program, 'u_arc_deg');
 
-  let focal = 1.5;
+  let focal = 1.0;
   let position = program === shaderPrograms['task_10'] ? [0.0, 0.0] : ((((program === shaderPrograms['task_8']) || (program === shaderPrograms['task_9']))) ? [0.75, 0.0] : [focal + 0.5, -0.5]);
   let rf = 1.0;
   let arcDeg = 160.0;
   let viewport_scale = parseFloat(document.getElementById('viewport-scale').value)
 
-  let image_scale = 0.3;
+  let image_scale = 0.4;
   let aspect;
   let imgReady = false;
 
