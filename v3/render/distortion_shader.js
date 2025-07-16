@@ -66,7 +66,7 @@ export async function setupDistortionControls(gl, program, task, activeListeners
   };
 
   const img = new Image();
-  img.src = `../assets/waifu.jpg`;
+  img.src = `./assets/waifu.jpg`;
   img.onload = () => {
     aspect = img.width / img.height;
     if (isTask10) {
