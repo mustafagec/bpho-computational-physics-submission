@@ -1,4 +1,4 @@
-import { initRenderer, loadShaderFromURL } from './common.js';
+
 import { vec2, mat2 } from 'https://esm.sh/gl-matrix@3.4.3';
 
 
@@ -245,38 +245,14 @@ function createBeamTexture(gl, segments) {
   return { texture, count: segments.length };
 }
 
-let activeListeners = [];
-function addListener(target, event, handler) {
-  target.addEventListener(event, handler);
-  activeListeners.push({ target, event, handler });
-}
 
 
-async function loadPrismShader(gl) {
-  const vs = await loadShaderFromURL('shaders/base.vert');
-  const fs = await loadShaderFromURL('shaders/prism.frag');
-  const program = await initRenderer(gl, vs, fs);
 
-  setupPrismControls(gl, program);
-
-  const position = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, position);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    -1, -1, 1, -1, -1, 1,
-    -1, 1, 1, -1, 1, 1,
-  ]), gl.STATIC_DRAW);
-
-  const posLoc = gl.getAttribLocation(program, 'a_position');
-  gl.enableVertexAttribArray(posLoc);
-  gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
-}
-
-
-export async function setupPrismControls(gl, program) {
+export async function setupPrismControls(gl, program, activeListeners) {
+  function addListener(target, event, handler) {
+    target.addEventListener(event, handler);
+    activeListeners.push({ target, event, handler });
+  } 
 
   const uViewportScale = gl.getUniformLocation(program, 'u_viewport_scale');
   const uAlpha = gl.getUniformLocation(program, 'u_prism_alpha');

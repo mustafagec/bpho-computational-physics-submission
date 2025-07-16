@@ -1,5 +1,3 @@
-import { initRenderer, loadShaderFromURL } from './common.js';
-
 
 
 function f_THz_to_rgb(frequency) {
@@ -123,68 +121,17 @@ export function recompute_bands(gl) {
   gl.bindTexture(gl.TEXTURE_2D, rainbow_distance_rgb_bands)
 }
 
-// alpha, h, r, freq vals, d vals, c_point
-
-//------------------------------------------------------------------------
 
 
-/* listeners */
-let activeListeners = [];
-function addListener(target, event, handler) {
-  target.addEventListener(event, handler);
-  activeListeners.push({ target, event, handler });
-}
-
-function clearListeners() {
-  for (const { target, event, handler } of activeListeners) {
-    target.removeEventListener(event, handler);
-  }
-  activeListeners = [];
-}
-
-//--------------------------------------------------------------------------------------
-
-
-/* shader initialisation */
-
-export async function loadRainbowShader(gl) {
-  if (!gl.getExtension('EXT_color_buffer_float')) {
-    console.error('EXT_color_buffer_float not supported!');
-  }
-  if (!gl.getExtension('OES_texture_float_linear')) {
-    console.error('OES_texture_float_linear not supported!');
-  }
-
-  clearListeners();
-  
-  const vs = await loadShaderFromURL('shaders/base.vert');
-  const fs = await loadShaderFromURL('shaders/rainbow.frag');
-  const program = await initRenderer(gl, vs, fs);
-
-  setupRainbowControls(gl, program);
-
-  recompute_bands(gl);
-
-  const position = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, position);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    -1, -1, 1, -1, -1, 1,
-    -1, 1, 1, -1, 1, 1,
-  ]), gl.STATIC_DRAW);
-
-  const posLoc = gl.getAttribLocation(program, 'a_position');
-  gl.enableVertexAttribArray(posLoc);
-  gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
-}
 
 
 // input initialisation ------------------------------------------------------------------- //
 
-export async function setupRainbowControls(gl, program) {
+export async function setupRainbowControls(gl, program, activeListeners) {
+  function addListener(target, event, handler) {
+    target.addEventListener(event, handler);
+    activeListeners.push({ target, event, handler });
+  }
 
   const uBands = gl.getUniformLocation(program, "u_bands");
   const uBandSpread = gl.getUniformLocation(program, "u_band_spread");

@@ -28,7 +28,7 @@ let fov_deg = 70.0;
 let radius_1 = 1.0;
 let radius_2 = 0.5;
 
-let raymarchActive = false;
+export let raymarchActive = false;
 
 let activeListeners = [];
 function addListener(target, event, handler) {
@@ -36,7 +36,7 @@ function addListener(target, event, handler) {
     activeListeners.push({ target, event, handler });
 }
 
-function startRaymarchingRenderLoop(gl, program) {
+export function startRaymarchingRenderLoop(gl, program) {
   function renderFrame(time) {
     if (!raymarchActive) return; // ❗ Stop rendering if inactive
     render(gl, program, time);
@@ -69,7 +69,7 @@ export async function loadRaymarchShader(gl) {
 }
 
 
-function setupRaymarchControls(gl, program) {
+export function setupRaymarchControls(gl, program) {
     const fovSlider = document.getElementById('fov-slider');
     const fovLabel = document.getElementById('fov-value');
 

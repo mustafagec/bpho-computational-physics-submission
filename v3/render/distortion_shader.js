@@ -1,4 +1,4 @@
-import { initRenderer, loadShaderFromURL } from './common.js';
+
 
 const shaderPrograms = Object.fromEntries(
   Array.from({ length: 6 }, (_, i) => [`task_${i + 5}`, null])
@@ -12,19 +12,8 @@ let viewport_scale = parseFloat(document.getElementById('viewport-scale').value)
 let imgReady = false;
 let aspect;
 
-let activeListeners = [];
-function addListener(target, event, handler) {
-  target.addEventListener(event, handler);
-  activeListeners.push({ target, event, handler });
-}
-function clearListeners() {
-  for (const { target, event, handler } of activeListeners) {
-    target.removeEventListener(event, handler);
-  }
-  activeListeners = [];
-}
 
-function drawQuad(gl, program) {
+export function drawQuad(gl, program) {
   const posLoc = gl.getAttribLocation(program, 'a_position');
   const buffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -35,26 +24,6 @@ function drawQuad(gl, program) {
   gl.enableVertexAttribArray(posLoc);
   gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
   gl.drawArrays(gl.TRIANGLES, 0, 6);
-}
-
-export async function loadDistortionShader(gl, task) {
-  clearListeners();
-
-  const vs = await loadShaderFromURL('shaders/base.vert');
-  const fsPath = `shaders/${task}.frag`;
-  if (!shaderPrograms[task]) {
-    const fs = await loadShaderFromURL(fsPath);
-    shaderPrograms[task] = await initRenderer(gl, vs, fs);
-  }
-  const program = shaderPrograms[task];
-  gl.useProgram(program);
-
-  setupDistortionControls(gl, program, task);
-
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  gl.clearColor(0, 0, 0, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  drawQuad(gl, program);
 }
 
 function getPositionByTask(task) {
@@ -69,7 +38,12 @@ function getPositionByTask(task) {
   }
 }
 
-export async function setupDistortionControls(gl, program, task) {
+export async function setupDistortionControls(gl, program, task, activeListeners) {
+  function addListener(target, event, handler) {
+    target.addEventListener(event, handler);
+    activeListeners.push({ target, event, handler });
+  }
+
   const isTask10 = task === 'task_10';
 
   // UI visibility setup

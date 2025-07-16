@@ -15,6 +15,9 @@ async function main() {
 
   await updateRenderer();
 
+
+  const distortionTabs = document.getElementById('distortion-tabs');
+
   // Global tab switching
   document.querySelectorAll('.tab-button').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -32,6 +35,12 @@ async function main() {
       document.getElementById('v-scale').style.display = currentSim !== 'rainbow' && currentSim !== 'raymarch' ? 'block' : 'none';
       document.getElementById('raymarch-controls').style.display =
         currentSim === 'raymarch' ? 'block' : 'none';
+
+      if (currentSim === 'distortion') {
+        distortionTabs.classList.add('visible');
+      } else {
+        distortionTabs.classList.remove('visible');
+      }
 
       await updateRenderer();
     });
