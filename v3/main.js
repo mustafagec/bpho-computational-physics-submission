@@ -59,7 +59,7 @@ async function updateRenderer() {
     window.__stopRaymarching?.();  // call cleanup
   }
 
-  await loadShader(gl, currentSim, currentMap);
+  await loadShader(gl, (currentSim === 'distortion') ? currentMap : currentSim);
   /*if (currentSim === 'distortion') {
     await loadDistortionShader(gl, currentMap);
   } else if (currentSim === 'prism') {

@@ -252,7 +252,7 @@ function addListener(target, event, handler) {
 }
 
 
-export async function loadPrismShader(gl) {
+async function loadPrismShader(gl) {
   const vs = await loadShaderFromURL('shaders/base.vert');
   const fs = await loadShaderFromURL('shaders/prism.frag');
   const program = await initRenderer(gl, vs, fs);
@@ -276,7 +276,7 @@ export async function loadPrismShader(gl) {
 }
 
 
-async function setupPrismControls(gl, program) {
+export async function setupPrismControls(gl, program) {
 
   const uViewportScale = gl.getUniformLocation(program, 'u_viewport_scale');
   const uAlpha = gl.getUniformLocation(program, 'u_prism_alpha');

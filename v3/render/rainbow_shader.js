@@ -56,7 +56,7 @@ let c_point = [0, 0];
 let spread = 0.005; //rendering contant
 
 /* cpu computation */
-function recompute_bands(gl) {
+export function recompute_bands(gl) {
   //clear data
   data = new Float32Array(numBands*2 * 4);
 
@@ -184,7 +184,7 @@ export async function loadRainbowShader(gl) {
 
 // input initialisation ------------------------------------------------------------------- //
 
-async function setupRainbowControls(gl, program) {
+export async function setupRainbowControls(gl, program) {
 
   const uBands = gl.getUniformLocation(program, "u_bands");
   const uBandSpread = gl.getUniformLocation(program, "u_band_spread");

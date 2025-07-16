@@ -1,19 +1,22 @@
-import { initRenderer, loadShaderFromURL } from './common.js';
+import { initRenderer, loadShaderFromURL } from './render/common.js';
 
-import { loadDistortionShader } from './render/distortion_shader.js';
-import { loadPrismShader } from './render/prism_shader.js';
-import { loadRainbowShader } from './render/rainbow_shader.js';
-import { loadRaymarchShader } from './render/raymarching_shader.js';
+import { setupDistortionControls } from './render/distortion_shader.js';
+import { setupPrismControls } from './render/prism_shader.js';
+import { setupRainbowControls, recompute_bands } from './render/rainbow_shader.js';
+import { setupRaymarchControls } from './render/raymarching_shader.js';
 // replace these with setupControls() functions, generalise setupControls at the end
+// make setupControls() export for now
+// do a minor cleanup, then focus on tasks 8,9 then 3
+// visit rainbow at the end
+// start on video on thursday latest
 
 
-
-export async function loadShader(gl, shader, sub_task) {
+export async function loadShader(gl, shader) {
     const vs = await loadShaderFromURL(`shaders/base.vert`);
     const fs = await loadShaderFromURL(`shaders/${shader}.frag`);
     const program = await initRenderer(gl, vs, fs);
 
-    shader = (shader === "distortion") ? sub_task : shader;
+    //shader = (shader === "distortion") ? sub_task : shader;
 
     clearListeners(activeListeners);
 
@@ -40,13 +43,13 @@ export async function loadShader(gl, shader, sub_task) {
                 setupDistortionControls(gl, program);
                 break;
             case 'prism':
-
+                setupPrismControls(gl, program);
                 break;
             case 'rainbow':
-                
+                setupRainbowControls(gl, program);
         }
 
-        setupControls(gl, program, shader);
+        //setupControls(gl, program, shader);
 
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.clear(gl.COLOR_BUFFER_BIT);

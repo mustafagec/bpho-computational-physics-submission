@@ -49,7 +49,7 @@ export async function loadDistortionShader(gl, task) {
   const program = shaderPrograms[task];
   gl.useProgram(program);
 
-  setupLensControls(gl, program, task);
+  setupDistortionControls(gl, program, task);
 
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clearColor(0, 0, 0, 1);
@@ -69,7 +69,7 @@ function getPositionByTask(task) {
   }
 }
 
-async function setupLensControls(gl, program, task) {
+export async function setupDistortionControls(gl, program, task) {
   const isTask10 = task === 'task_10';
 
   // UI visibility setup
