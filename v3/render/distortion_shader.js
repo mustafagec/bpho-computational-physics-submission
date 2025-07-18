@@ -1,5 +1,3 @@
-
-
 const shaderPrograms = Object.fromEntries(
   Array.from({ length: 6 }, (_, i) => [`task_${i + 5}`, null])
 );
@@ -8,10 +6,16 @@ let focal = 1.0;
 let rf = 1.0;
 let arcDeg = 160.0;
 let image_scale = 0.4;
-let viewport_scale = parseFloat(document.getElementById('viewport-scale').value);
+
+// Safe fallback: only read viewport-scale if it exists, else default 1.0
+let viewport_scale = 1.0;
+const viewportScaleElement = document.getElementById('viewport-scale');
+if (viewportScaleElement) {
+  viewport_scale = parseFloat(viewportScaleElement.value);
+}
+
 let imgReady = false;
 let aspect;
-
 
 export function drawQuad(gl, program) {
   const posLoc = gl.getAttribLocation(program, 'a_position');
@@ -38,6 +42,13 @@ function getPositionByTask(task) {
   }
 }
 
+/**
+ * Setup distortion controls and event listeners for the given task.
+ * @param {WebGLRenderingContext} gl 
+ * @param {WebGLProgram} program 
+ * @param {string} task Task name like 'task_5', 'task_6_7', 'task_8', etc.
+ * @param {Array} activeListeners Array to store {target,event,handler} for cleanup
+ */
 export async function setupDistortionControls(gl, program, task, activeListeners) {
   function addListener(target, event, handler) {
     target.addEventListener(event, handler);
@@ -46,13 +57,34 @@ export async function setupDistortionControls(gl, program, task, activeListeners
 
   const isTask10 = task === 'task_10';
 
-  // UI visibility setup
-  const focalControl = document.getElementById('focal-length').parentElement;
-  const imageScaleControl = document.getElementById('image-scale').parentElement;
+  // Map task to correct slider IDs
+  // You can extend this mapping if you add more tasks/sliders
+  const sliderIdMap = {
+    'task_5': { focal: 'focal-length', imageScale: 'image-scale-task5', viewportScale: 'viewport-scale', rf: 'rf-slider', arc: 'arc-slider' },
+    'task_6_7': { focal: 'focal-length', imageScale: 'image-scale-task6_7', viewportScale: 'viewport-scale', rf: 'rf-slider', arc: 'arc-slider' },
+    'task_8': { focal: 'focal-length', imageScale: 'image-scale-task8', viewportScale: 'viewport-scale', rf: 'rf-slider', arc: 'arc-slider' },
+    'task_9': { focal: 'focal-length', imageScale: 'image-scale-task9', viewportScale: 'viewport-scale', rf: 'rf-slider', arc: 'arc-slider' },
+    'task_10': { focal: 'focal-length', imageScale: 'image-scale-task10', viewportScale: 'viewport-scale', rf: 'rf-slider', arc: 'arc-slider' },
+  };
+
+  // Use fallback IDs if not found
+  const ids = sliderIdMap[task] || {
+    focal: 'focal-length',
+    imageScale: 'image-scale',
+    viewportScale: 'viewport-scale',
+    rf: 'rf-slider',
+    arc: 'arc-slider',
+  };
+
+  // Show/hide controls depending on task and availability
+  // Use optional chaining and null checks for safety
+  const focalControl = document.getElementById(ids.focal)?.parentElement;
+  const imageScaleControl = document.getElementById(ids.imageScale)?.parentElement;
   const task10Controls = document.getElementById('task10-controls');
-  focalControl.style.display = isTask10 ? 'none' : 'block';
-  imageScaleControl.style.display = isTask10 ? 'none' : 'block';
-  task10Controls.style.display = isTask10 ? 'block' : 'none';
+
+  if (focalControl) focalControl.style.display = isTask10 ? 'none' : 'block';
+  if (imageScaleControl) imageScaleControl.style.display = isTask10 ? 'none' : 'block';
+  if (task10Controls) task10Controls.style.display = isTask10 ? 'block' : 'none';
 
   const uniforms = {
     uResolution: gl.getUniformLocation(program, 'u_resolution'),
@@ -117,18 +149,19 @@ export async function setupDistortionControls(gl, program, task, activeListeners
     gl.uniform2f(uniforms.uResolution, gl.canvas.width, gl.canvas.height);
   }
 
-  // Slider hookup
+  // Setup sliders hookup based on current task IDs
   const sliders = [
-    { id: 'focal-length', label: 'focal-length-value', value: v => focal = v },
-    { id: 'image-scale', label: 'image-scale-value', value: v => image_scale = v },
-    { id: 'viewport-scale', label: 'viewport-scale-value', value: v => viewport_scale = v },
-    { id: 'rf-slider', label: 'rf-value', value: v => rf = v },
-    { id: 'arc-slider', label: 'arc-value', value: v => arcDeg = v },
+    { id: ids.focal, label: 'focal-length-value', value: v => focal = v },
+    { id: ids.imageScale, label: `image-scale-value-${task.replace('task_', '')}`, value: v => image_scale = v },
+    { id: ids.viewportScale, label: 'viewport-scale-value', value: v => viewport_scale = v },
+    { id: ids.rf, label: 'rf-value', value: v => rf = v },
+    { id: ids.arc, label: 'arc-value', value: v => arcDeg = v },
   ];
 
   for (const { id, label, value } of sliders) {
     const slider = document.getElementById(id);
     const display = document.getElementById(label);
+    if (!slider || !display) continue; // Skip missing sliders/labels
     addListener(slider, 'input', () => {
       value(parseFloat(slider.value));
       display.textContent = slider.value;
@@ -136,7 +169,7 @@ export async function setupDistortionControls(gl, program, task, activeListeners
     });
   }
 
-  // Presets
+  // Presets for viewport_scale and image_scale based on task
   if (['task_8', 'task_9'].includes(task)) {
     viewport_scale = 2.2;
     image_scale = 0.3;
@@ -145,12 +178,21 @@ export async function setupDistortionControls(gl, program, task, activeListeners
     image_scale = 0.3;
   }
 
-  document.getElementById('viewport-scale').value = viewport_scale;
-  document.getElementById('image-scale').value = image_scale;
-  document.getElementById('viewport-scale-value').textContent = viewport_scale;
-  document.getElementById('image-scale-value').textContent = image_scale;
+  // Update sliders and display values, only if elements exist
+  if (document.getElementById(ids.viewportScale)) {
+    document.getElementById(ids.viewportScale).value = viewport_scale;
+  }
+  if (document.getElementById(ids.imageScale)) {
+    document.getElementById(ids.imageScale).value = image_scale;
+  }
+  if (document.getElementById('viewport-scale-value')) {
+    document.getElementById('viewport-scale-value').textContent = viewport_scale;
+  }
+  if (document.getElementById(`image-scale-value-${task.replace('task_', '')}`)) {
+    document.getElementById(`image-scale-value-${task.replace('task_', '')}`).textContent = image_scale;
+  }
 
-  // Mouse & key interaction
+  // Mouse & keyboard interaction for dragging image position
   if (!isTask10) {
     let dragging = false;
     let last = [0, 0];

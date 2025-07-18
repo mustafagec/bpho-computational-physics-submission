@@ -38,14 +38,67 @@
     <p><b>controls</b></p>
 
     <!-- universal controls -->
-    <div class="control-row" id="v-scale">
-      <label>viewport scale: <span id="viewport-scale-value">6.0</span></label>
-      <input type="range" id="viewport-scale" min="1.5" max="15.0" step="0.01" value="6.0">
+    <div id="universal-controls">
+      <div class="control-row" id="v-scale">
+        <label>viewport scale: <span id="viewport-scale-value">6.0</span></label>
+        <input type="range" id="viewport-scale" min="1.5" max="15.0" step="0.01" value="6.0">
+      </div>
     </div>
+    
 
     <!-- sim specific controls -->
 
     <div id="lens-controls" style="display: none;">
+      <!-- Task 5 controls -->
+      <div class="task-controls visible" id="task5-controls">
+        <div class="control-row">
+          <label>image scale: <span id="image-scale-value-task5">0.4</span></label>
+          <input type="range" id="image-scale-task5" min="0.1" max="3.0" step="0.05" value="0.4">
+        </div>
+      </div>
+
+
+      <!-- Task 6 & 7 controls -->
+      <div class="task-controls" id="task6-7-controls">
+        <div class="control-row">
+          <label>focal length: <span id="focal-length-value">1.0</span></label>
+          <input type="range" id="focal-length" min="0.5" max="5.0" step="0.1" value="1.0">
+        </div>
+        <div class="control-row">
+          <label>image scale: <span id="image-scale-value-task6_7">0.4</span></label>
+          <input type="range" id="image-scale-task6_7" min="0.1" max="3.0" step="0.05" value="0.4">
+        </div>
+      </div>
+
+      <!-- Task 8 controls -->
+      <div class="task-controls" id="task8-controls">
+        <div class="control-row">
+          <label>image scale: <span id="image-scale-value-task8">0.4</span></label>
+          <input type="range" id="image-scale-task8" min="0.1" max="3.0" step="0.05" value="0.4">
+        </div>
+      </div>
+
+      <!-- Task 9 controls -->
+      <div class="task-controls" id="task9-controls">
+        <div class="control-row">
+          <label>image scale: <span id="image-scale-value-task9">0.4</span></label>
+          <input type="range" id="image-scale-task9" min="0.1" max="3.0" step="0.05" value="0.4">
+        </div>
+      </div>
+
+      <!-- Task 10 controls -->
+      <div class="task-controls" id="task10-controls">
+        <div class="control-row">
+          <label>Rf: <span id="rf-value">1.0</span></label>
+          <input type="range" id="rf-slider" min="0.1" max="5.0" step="0.1" value="1.0">
+        </div>
+        <div class="control-row">
+          <label>arc / ° : <span id="arc-value">160</span></label>
+          <input type="range" id="arc-slider" min="30" max="360" step="1" value="160">
+        </div>
+      </div>
+
+      <!--
       <div class="control-row" id="focal-length-control">
         <label>focal length: <span id="focal-length-value">1.0</span></label>
         <input type="range" id="focal-length" min="0.5" max="5.0" step="0.1" value="1.0">
@@ -65,7 +118,7 @@
           <label>arc / ° : <span id="arc-value">160</span></label>
           <input type="range" id="arc-slider" min="30" max="360" step="1" value="160">
         </div>
-      </div>
+      </div>-->
     </div>
 
     <div id="rainbow-controls" style="display: none;">

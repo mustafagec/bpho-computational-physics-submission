@@ -1,42 +1,49 @@
+/* ============================
+   Base & Reset
+   ============================ */
+
 body {
+  margin: 0;
+  padding: 0;
   font-family: Arial, sans-serif;
   text-align: center;
   background-color: #1b1c1d;
   color: #eee;
-  margin: 0;
-  padding: 0;
 }
 
 h1 {
   display: none;
-  margin: 10px 0;
-  margin-bottom: 10px;
-  margin-top: 20px;
+  margin: 20px 0 10px;
 }
 
-/* Canvas styling */
+/* ============================
+   Canvas Styling
+   ============================ */
+
 canvas {
+  display: block;
+  margin: 0 auto 20px;
+  width: auto;
+  height: 55vh;
   border: 1px solid #444;
   border-radius: 5px;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.19);
   user-select: none;
-  -webkit-user-select: none;
-  box-shadow: 5px 5px 5px #00000031;
-  display: block;
-  margin: 0 auto 20px auto;
-  height: 55vh;
-  width: auto;
 }
 
-/* Center tab buttons */
+/* ============================
+   Tabs
+   ============================ */
+
 .tab-container {
-  margin-top: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  margin: 30px 0 20px;
 }
 
-.tab-group, .sub-tab-group {
+.tab-group,
+.sub-tab-group {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -44,48 +51,62 @@ canvas {
   margin: 0.5em 0;
 }
 
-/* Button styling */
-.tab-button, .sub-tab-button {
+.tab-button,
+.sub-tab-button {
   padding: 0.6em 1em;
   background-color: #333;
-  box-shadow: 5px 5px 5px #00000031;
-  color: white;
+  color: #fff;
   border: none;
-  cursor: pointer;
   border-radius: 5px;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.19);
+  cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.tab-button:hover, .sub-tab-button:hover {
+.tab-button:hover,
+.sub-tab-button:hover {
   background-color: #454545;
 }
 
-.tab-button.active, .sub-tab-button.active {
+.tab-button.active,
+.sub-tab-button.active {
   background-color: #625050;
 }
 
-.tab-button.active:hover, .sub-tab-button.active:hover {
+.tab-button.active:hover,
+.sub-tab-button.active:hover {
   background-color: #454545;
 }
 
-/* Controls box styling */
+.sub-tab-wrapper {
+  min-height: 45px;
+}
+
+/* ============================
+   Controls Container
+   ============================ */
+
 .controls {
-  margin: 10px auto 40px auto;
   max-width: 600px;
-  background-color: #222;
+  margin: 10px auto 40px;
   padding: 10px 50px;
-  border-radius: 5px;
-  box-shadow: 5px 5px 5px #00000031;
+  background-color: #222;
   color: #ccc;
   font-size: 14px;
-  min-height: 110px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.19);
   text-align: left;
+  min-height: 110px;
 }
 
 .controls p {
   margin: 2px 0;
   font-weight: bold;
 }
+
+/* ============================
+   Control Row
+   ============================ */
 
 .control-row {
   display: flex;
@@ -96,29 +117,39 @@ canvas {
 }
 
 .control-row label {
-  flex: 0 0 200px; /* Fixed width for alignment */
+  flex: 0 0 200px;
   text-align: left;
 }
 
 .control-row label span {
   display: inline-block;
   min-width: 35px;
-  text-align: right;
   margin-left: 8px;
+  text-align: right;
 }
 
 input[type="range"] {
-  flex: 1;
-  min-width: 200px;
-  max-width: 100%;
+  /* Fixed width based on label width + gap to ensure consistent sizing */
+  width: calc(100% - 200px - 10px);
+  flex: none;
   height: 10px;
 }
 
-/* Match nested control layout */
-#task10-controls .control-row {
-  padding: 6px 0;
-  gap: 10px;
+/* ============================
+   Task-Specific Controls
+   ============================ */
+
+.task-controls {
+  display: none;
 }
+
+.task-controls.visible {
+  display: block;
+}
+
+/* ============================
+   Distortion Tabs Animation
+   ============================ */
 
 #distortion-tabs {
   max-height: 0;
@@ -132,9 +163,4 @@ input[type="range"] {
   max-height: 200px;
   opacity: 1;
   pointer-events: auto;
-}
-
-.sub-tab-wrapper {
-  min-height: 45px;
-  
 }
