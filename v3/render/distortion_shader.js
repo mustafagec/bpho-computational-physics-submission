@@ -6,6 +6,8 @@ let focal = 1.0;
 let rf = 1.0;
 let arcDeg = 160.0;
 let image_scale = 0.4;
+let sphereRadius = 0.5;
+let planeZ       = -1.0;
 
 // Safe fallback: only read viewport-scale if it exists, else default 1.0
 let viewport_scale = 1.0;
@@ -55,6 +57,7 @@ export async function setupDistortionControls(gl, program, task, activeListeners
     activeListeners.push({ target, event, handler });
   }
 
+  const isTask8 = task === 'task_8';
   const isTask10 = task === 'task_10';
 
   // Map task to correct slider IDs
@@ -87,14 +90,16 @@ export async function setupDistortionControls(gl, program, task, activeListeners
   if (task10Controls) task10Controls.style.display = isTask10 ? 'block' : 'none';
 
   const uniforms = {
-    uResolution: gl.getUniformLocation(program, 'u_resolution'),
-    uFocal: gl.getUniformLocation(program, 'u_focal_length'),
-    uPos: gl.getUniformLocation(program, 'u_image_position'),
-    uImageSize: gl.getUniformLocation(program, 'u_image_size'),
-    uViewportSize: gl.getUniformLocation(program, 'u_viewport_size'),
-    uImage: gl.getUniformLocation(program, 'u_image'),
-    uRf: gl.getUniformLocation(program, 'u_rf'),
-    uArcDeg: gl.getUniformLocation(program, 'u_arc_deg'),
+    uResolution:    gl.getUniformLocation(program, 'u_resolution'),
+    uFocal:         gl.getUniformLocation(program, 'u_focal_length'),
+    uPos:           gl.getUniformLocation(program, 'u_image_position'),
+    uImageSize:     gl.getUniformLocation(program, 'u_image_size'),
+    uViewportSize:  gl.getUniformLocation(program, 'u_viewport_size'),
+    uImage:         gl.getUniformLocation(program, 'u_image'),
+    uRf:            gl.getUniformLocation(program, 'u_rf'),
+    uArcDeg:        gl.getUniformLocation(program, 'u_arc_deg'),
+    uSphereRadius:  gl.getUniformLocation(program, 'u_sphereRadius'),
+    uPlaneZ:        gl.getUniformLocation(program, 'u_planeZ'),
   };
 
   const img = new Image();
@@ -121,15 +126,21 @@ export async function setupDistortionControls(gl, program, task, activeListeners
     const width = aspect * height;
     const imageSize = [width * image_scale, height * image_scale];
 
-    gl.uniform1f(uniforms.uFocal, focal);
-    gl.uniform2fv(uniforms.uPos, position);
-    gl.uniform2fv(uniforms.uImageSize, imageSize);
-    gl.uniform1f(uniforms.uViewportSize, viewport_scale);
-    gl.uniform2f(uniforms.uResolution, gl.canvas.width, gl.canvas.height);
-
+    gl.uniform1f(uniforms.uFocal,         focal);
+    gl.uniform2fv(uniforms.uPos,          position);
+    gl.uniform2fv(uniforms.uImageSize,    imageSize);
+    gl.uniform1f(uniforms.uViewportSize,  viewport_scale);
+    gl.uniform2f(uniforms.uResolution,    gl.canvas.width, gl.canvas.height);
     if (isTask10) {
-      gl.uniform1f(uniforms.uRf, rf);
-      gl.uniform1f(uniforms.uArcDeg, arcDeg);
+      gl.uniform1f(uniforms.uRf,          rf);
+      gl.uniform1f(uniforms.uArcDeg,      arcDeg);
+    }
+    if (isTask8) {
+      sphereRadius = 0.5;          
+      // put the image‐plane one unit behind the view‐plane
+      planeZ       = -1.0;         
+      gl.uniform1f(uniforms.uSphereRadius, sphereRadius);
+      gl.uniform1f(uniforms.uPlaneZ,       planeZ);
     }
 
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -149,25 +160,35 @@ export async function setupDistortionControls(gl, program, task, activeListeners
     gl.uniform2f(uniforms.uResolution, gl.canvas.width, gl.canvas.height);
   }
 
-  // Setup sliders hookup based on current task IDs
   const sliders = [
-    { id: ids.focal, label: 'focal-length-value', value: v => focal = v },
-    { id: ids.imageScale, label: `image-scale-value-${task}`, value: v => image_scale = v },
-    { id: ids.viewportScale, label: 'viewport-scale-value', value: v => viewport_scale = v },
-    { id: ids.rf, label: 'rf-value', value: v => rf = v },
-    { id: ids.arc, label: 'arc-value', value: v => arcDeg = v },
+    { id: ids.focal,       value: v => focal = v },
+    { id: ids.imageScale,  value: v => image_scale = v },
+    { id: ids.viewportScale,value: v => viewport_scale = v },
+    { id: ids.rf,          value: v => rf = v },
+    { id: ids.arc,         value: v => arcDeg = v },
   ];
 
-  for (const { id, label, value } of sliders) {
+  for (const { id, value } of sliders) {
     const slider = document.getElementById(id);
-    const display = document.getElementById(label);
-    if (!slider || !display) continue; // Skip missing sliders/labels
+    if (!slider) continue;
+
+    // find the <span> inside the same .control-row
+    const controlRow = slider.closest('.control-row');
+    const display    = controlRow?.querySelector('label span');
+    if (!display) continue;
+
+    // initialize display text
+    display.textContent = slider.value;
+
+    // wire up the input
     addListener(slider, 'input', () => {
-      value(parseFloat(slider.value));
+      const v = parseFloat(slider.value);
+      value(v);
       display.textContent = slider.value;
       triggerDraw();
     });
   }
+
 
   // Presets for viewport_scale and image_scale based on task
   if (['task_8', 'task_9'].includes(task)) {
