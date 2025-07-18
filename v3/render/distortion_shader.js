@@ -152,7 +152,7 @@ export async function setupDistortionControls(gl, program, task, activeListeners
   // Setup sliders hookup based on current task IDs
   const sliders = [
     { id: ids.focal, label: 'focal-length-value', value: v => focal = v },
-    { id: ids.imageScale, label: `image-scale-value-${task.replace('task_', '')}`, value: v => image_scale = v },
+    { id: ids.imageScale, label: `image-scale-value-${task}`, value: v => image_scale = v },
     { id: ids.viewportScale, label: 'viewport-scale-value', value: v => viewport_scale = v },
     { id: ids.rf, label: 'rf-value', value: v => rf = v },
     { id: ids.arc, label: 'arc-value', value: v => arcDeg = v },
@@ -188,9 +188,10 @@ export async function setupDistortionControls(gl, program, task, activeListeners
   if (document.getElementById('viewport-scale-value')) {
     document.getElementById('viewport-scale-value').textContent = viewport_scale;
   }
-  if (document.getElementById(`image-scale-value-${task.replace('task_', '')}`)) {
-    document.getElementById(`image-scale-value-${task.replace('task_', '')}`).textContent = image_scale;
+  if (document.getElementById(`image-scale-value-${task}`)) {
+    document.getElementById(`image-scale-value-${task}`).textContent = image_scale;
   }
+
 
   // Mouse & keyboard interaction for dragging image position
   if (!isTask10) {
