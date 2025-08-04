@@ -1,6 +1,3 @@
-/* ============================
-   Base & Reset
-   ============================ */
 
 body {
   margin: 0;
@@ -16,10 +13,6 @@ h1 {
   margin: 20px 0 10px;
 }
 
-/* ============================
-   Canvas Styling
-   ============================ */
-
 canvas {
   display: block;
   margin: 0 auto 20px;
@@ -31,9 +24,6 @@ canvas {
   user-select: none;
 }
 
-/* ============================
-   Tabs
-   ============================ */
 
 .tab-container {
   display: flex;
@@ -82,9 +72,6 @@ canvas {
   min-height: 45px;
 }
 
-/* ============================
-   Controls Container
-   ============================ */
 
 .controls {
   max-width: 600px;
@@ -104,9 +91,6 @@ canvas {
   font-weight: bold;
 }
 
-/* ============================
-   Control Row
-   ============================ */
 
 .control-row {
   display: flex;
@@ -135,9 +119,6 @@ input[type="range"] {
   height: 10px;
 }
 
-/* ============================
-   Task-Specific Controls
-   ============================ */
 
 .task-controls {
   display: none;
@@ -147,9 +128,6 @@ input[type="range"] {
   display: block;
 }
 
-/* ============================
-   Distortion Tabs Animation
-   ============================ */
 
 #distortion-tabs {
   max-height: 0;
