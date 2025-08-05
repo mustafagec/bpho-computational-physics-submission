@@ -2,41 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Shader vs CPU Pixels</title>
+  <title>sim</title>
   <style>
     body {
         margin: 0; 
         overflow: hidden; 
         background: #111; 
+        font-family: sans-serif;
     }
-    
     #ui {
       position: absolute; top: 10px; left: 10px;
-      z-index: 10;
+      z-index: 10; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;
     }
-
     button {
       padding: 5px;
-      margin-right: 5px;
-      font-size: 14px;
-      
+      margin: 2px;
+    }
+    #sliders {
+      margin-top: 10px;
+    }
+    .slider-container {
+      margin-bottom: 5px;
+      color: #fff;
     }
   </style>
 </head>
 <body>
   <div id="ui">
-    <button id="gpuBtn">GPU Shader</button>
-    <button id="cpuBtn">CPU Pixels</button>
-    <button id="task-5-button">task 5</button>
-    <button id="task-6-button">task 6 & 7</button>
-    <button id="task-8-button">task 8</button>
-    <button id="task-9-button">task 9</button>
-    <button id="task-10-button">task 10</button>
-    <button id="task-10-button">task 11</button>
-    <button id="task-10-button">task 12</button>
-    <button id="task-10-button">challenge</button>
-
+    <div id="buttons">
+      <button data-task="5">task 5</button>
+      <button data-task="6">task 6 & 7</button>
+      <button data-task="8">task 8</button>
+      <button data-task="9">task 9</button>
+      <button data-task="10">task 10</button>
+      <button data-task="11">task 11</button>
+      <button data-task="12">task 12</button>
+      <button data-task="challenge">challenge</button>
+    </div>
+    <div id="sliders"></div>
   </div>
+
   <script type="module" src="main.js"></script>
 </body>
 </html>
