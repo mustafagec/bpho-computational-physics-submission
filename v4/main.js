@@ -18,7 +18,7 @@ function loadShader(taskId) {
   return fetch(`shaders/task${taskId}.frag`).then(res => res.text());
 }
 
-function createSliders(uniforms) {
+function createShaderSliders(uniforms) {
   slidersDiv.innerHTML = '';
   currentUniforms = uniforms;
 
@@ -118,7 +118,7 @@ function runShaderTask(taskId) {
       break;
   }
   
-  createSliders(uniforms);
+  createShaderSliders(uniforms);
 
   loadShader(taskId).then(fragmentShader => {
     const mat = new THREE.ShaderMaterial({
@@ -192,7 +192,7 @@ function runChallengeShader() {
     radius_2: { value: 0.25, min: 0, max: 1, step: 0.01 }
   };
 
-  createSliders(uniforms);
+  createShaderSliders(uniforms);
 
   loadShader('challenge').then(fragmentShader => {
     const mat = new THREE.ShaderMaterial({
