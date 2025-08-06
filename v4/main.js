@@ -259,7 +259,6 @@ function runShaderTask(taskId) {
   
   createShaderSliders(uniforms);
 
-
   loadShader(taskId).then(fragmentShader => {
     const mat = new THREE.ShaderMaterial({
       uniforms,
