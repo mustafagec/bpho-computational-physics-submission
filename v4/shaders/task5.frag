@@ -1,8 +1,81 @@
-uniform float uValue;
+uniform sampler2D uImage;
 uniform vec2 uResolution;
+uniform vec2 uImagePosition;
+uniform float uImageScale;
+uniform float uViewportScale;
+
+
+const float pi = 3.14159265358979323846264338328;
+
+vec2 inverse_map(vec2 mapped_pos) {
+    float X = mapped_pos.x;
+    float Y = mapped_pos.y;
+
+    if (abs(X) < 0.001) return vec2(0.0);
+
+    float x = -X;
+    float y = Y;
+
+    return vec2(x, y);
+}
 
 void main() {
-  vec2 uv = gl_FragCoord.xy / uResolution;
-  float brightness = step(uValue, uv.x);
-  gl_FragColor = vec4(vec3(brightness), 1.0);
+    vec2 uv = gl_FragCoord.xy / uResolution;
+
+    float aspect = uResolution.x / uResolution.y;
+    vec2 world_size = vec2(aspect, 1.0) * uViewportScale;
+    vec2 world_pos = (uv - 0.5) * world_size;
+
+    // Compute image scale preserving aspect ratio
+    vec2 imageSize = vec2(textureSize(uImage, 0));
+    float imageAspect = imageSize.x / imageSize.y;
+    vec2 imageWorldScale = vec2(uImageScale * imageAspect, uImageScale);
+
+    // Check original space hit
+    bool in_original_image = 
+        world_pos.x >= uImagePosition.x && 
+        world_pos.x <= uImagePosition.x + imageWorldScale.x &&
+        world_pos.y >= uImagePosition.y && 
+        world_pos.y <= uImagePosition.y + imageWorldScale.y;
+
+    if (in_original_image) {
+        vec2 image_uv = (world_pos - uImagePosition) / imageWorldScale;
+        image_uv = image_uv * vec2(1.0, -1.0) + vec2(0.0, 1.0);
+        gl_FragColor = texture(uImage, clamp(image_uv, 0.0, 1.0));
+        return;
+    }
+
+    vec2 obj_pos = inverse_map(world_pos);
+
+    bool in_distorted_area = 
+        obj_pos.x >= uImagePosition.x &&
+        obj_pos.x <= uImagePosition.x + imageWorldScale.x &&
+        obj_pos.y >= uImagePosition.y && 
+        obj_pos.y <= uImagePosition.y + imageWorldScale.y;
+
+    if (in_distorted_area) {
+        vec2 image_uv = (obj_pos - uImagePosition) / imageWorldScale;
+        image_uv = image_uv * vec2(1.0, -1.0) + vec2(0.0, 1.0);
+        gl_FragColor = texture(uImage, clamp(image_uv, 0.0, 1.0));
+        return;
+    }
+
+    // Mirror line
+    if (abs(world_pos.x) < 0.035) {
+        gl_FragColor = vec4(0.1, 0.1, 0.9, 1.0);
+        return;
+    }
+
+    // Grid lines
+    float spacing = 1.0;
+    float line_thickness = 0.02;
+
+    if (abs(mod(world_pos.x, spacing)) < line_thickness ||
+        abs(mod(world_pos.y, spacing)) < line_thickness) {
+        gl_FragColor = vec4(0.82, 0.85, 0.85, 1.0);
+        return;
+    }
+
+    // Background
+    gl_FragColor = vec4(1.0);
 }
