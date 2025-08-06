@@ -1,7 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
 import { recomputeBands } from './computations/rainbow.js';
 import { getPrismBeamTexture } from './computations/prism.js';
-import { updateTask8, updateTask9 } from './computations/sphericalDistortions.js';
+import { updateTask } from './computations/sphericalDistortions.js';
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -153,14 +153,14 @@ function runShaderTask(taskId) {
 
   switch (taskId) {
     case '5':
-      uniforms.uImageScale = { value: 0.5, min: 0, max: 10, step: 0.01 };
+      uniforms.uImageScale = { value: 0.8, min: 0, max: 10, step: 0.01 };
       uniforms.uImage = { value: imageTexture };
-      uniforms.uImagePosition = { value: new THREE.Vector2(-0.5, -0.5), min: -1, max: 1, step: 0.01 };
+      uniforms.uImagePosition = { value: new THREE.Vector2(0.5, 0), min: -1, max: 1, step: 0.01 };
       break;
     case '6':
       uniforms.uImageScale = { value: 0.3, min: 0, max: 10, step: 0.01 };
       uniforms.uImage = { value: imageTexture };
-      uniforms.uImagePosition = { value: new THREE.Vector2(-0.5, -0.5), min: -1, max: 1, step: 0.01 };
+      uniforms.uImagePosition = { value: new THREE.Vector2(0.9, 0), min: -1, max: 1, step: 0.01 };
       uniforms.uFocalLength = { value: 1.5, min: 0, max: 3.0, step: 0.01 };
       break;
     case '10':
@@ -313,9 +313,9 @@ function runCpuTask(taskId) {
   stopAnimationLoop();
 
   const uniforms = {
-    uViewportScale: { value: 7.0, min: 0.1, max: 14.0, step: 0.01 },
-    uImageScale:    { value: 0.5, min: 0.1, max: 2.0, step: 0.01 },
-    uImagePosition:{ value: new THREE.Vector2(-0.5, -0.5), min: -1, max:1, step:0.01 }
+    uViewportScale: { value: 2.0, min: 0.1, max: 14.0, step: 0.01 },
+    uImageScale:    { value: 0.25, min: 0.01, max: 1.0, step: 0.01 },
+    uImagePosition:{ value: new THREE.Vector2(0.05, -0.025), min: -1, max:1, step:0.01 }
   };
 
   createCpuSliders(uniforms);
@@ -326,8 +326,9 @@ function runCpuTask(taskId) {
   const height = window.innerHeight;
   const data  = new Uint8Array(4 * width * height);
   const tex   = new THREE.DataTexture(data, width, height, THREE.RGBAFormat);
-  tex.magFilter = THREE.NearestFilter;
-  tex.minFilter = THREE.NearestFilter;
+  //tex.magFilter = THREE.NearestFilter;
+  //tex.minFilter = THREE.NearestFilter;
+  //tex.flipY = true;
 
   quad.material = new THREE.MeshBasicMaterial({ map: tex });
 
@@ -338,24 +339,34 @@ function runCpuTask(taskId) {
     const posX = uniforms.uImagePosition.value.x;
     const posY = uniforms.uImagePosition.value.y;
 
-    switch(taskId) {
-      case '8':
-        updateTask8(
-          data, width, height,
-          imgS, vpS,
-          imageData, imageWidth, imageHeight,
-          [ posX, posY ],
-          (x, y) => {
-            const X = -x;
-            const Y = y
-            return [X, Y];
-          }
-        );
-        break;
-      case '9':
-        updateTask9(data, width, height, imgS, vpS);
-        break;
-    }
+    
+    updateTask(
+      taskId,
+      data, width, height,
+      imgS, vpS,
+      imageData, imageWidth, imageHeight,
+      [ posX, posY ],
+      (x, y) => {
+        let X, Y;
+        const R = 0.5;
+        switch(taskId) {
+          case '8':
+            const d = Math.sqrt(R*R - y*y);
+            const theta = Math.atan(y / d);
+            const m = Math.tan(2*theta);
+            X = -(m*d - y)/(y/x + m);
+            Y = (y/x)*X;
+            break;
+          case '9':
+            const a = 0.5 * Math.atan(y/x);
+            const k = x / Math.cos(2 * a);
+            Y = k * Math.sin(a) / (k/R - Math.cos(a) + x/y * Math.sin(a));
+            X = x * Y/y;
+          break;
+        }
+        return [X, Y];
+      }
+    );
 
     tex.needsUpdate = true;
     updateShaderOnce();
