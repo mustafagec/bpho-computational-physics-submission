@@ -1,7 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
 import { recomputeBands } from './computations/rainbow.js';
 import { getPrismBeamTexture } from './computations/prism.js';
-
+import { updateTask8, updateTask9 } from './computations/sphericalDistortions.js';
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -18,8 +18,45 @@ let currentUniforms = {};
 let animationId = null;
 
 const textureLoader = new THREE.TextureLoader();
-const imageTexture = textureLoader.load('assets/image.jpg');
+/*const imageTexture = textureLoader.load('assets/image.jpg');
 imageTexture.flipY = false;
+
+// after your TextureLoader finishes:
+const img = imageTexture.image; // HTMLImageElement
+const off = document.createElement('canvas');
+off.width  = img.width;
+off.height = img.height;
+const ctx = off.getContext('2d');
+ctx.drawImage(img, 0, 0);
+const imageData = ctx.getImageData(0, 0, img.width, img.height).data;*/
+
+//const textureLoader = new THREE.TextureLoader();
+let imageTexture = null;
+let imageData = null;
+let imageWidth = 0, imageHeight = 0;
+
+textureLoader.load(
+  'assets/image.jpg',
+  texture => {
+    imageTexture = texture;
+    imageTexture.flipY = false;
+
+    const imgEl = texture.image; // HTMLImageElement
+    imageWidth  = imgEl.width;
+    imageHeight = imgEl.height;
+
+    // draw into offscreen canvas to grab RGBA pixel buffer
+    const off = document.createElement('canvas');
+    off.width  = imageWidth;
+    off.height = imageHeight;
+    const ctx = off.getContext('2d');
+    ctx.drawImage(imgEl, 0, 0);
+    imageData = ctx.getImageData(0, 0, imageWidth, imageHeight).data;
+  },
+  undefined,
+  err => console.error('Failed to load image.jpg', err)
+);
+
 
 let isDragging = false;
 let dragStart = null;
@@ -68,6 +105,7 @@ function createShaderSliders(uniforms) {
 function createCpuSliders(uniforms) {
   slidersDiv.innerHTML = '';
   Object.entries(uniforms).forEach(([name, uniform]) => {
+    if (name == 'uImagePosition') return;
     const container = document.createElement('div');
     container.className = 'slider-container';
 
@@ -275,49 +313,56 @@ function runCpuTask(taskId) {
   stopAnimationLoop();
 
   const uniforms = {
-    uViewportScale: { value: 0.5, min: 0.1, max: 2.0, step: 0.01 },
-    uImageScale: { value: 0.5, min: 0.1, max: 2.0, step: 0.01 }
+    uViewportScale: { value: 7.0, min: 0.1, max: 14.0, step: 0.01 },
+    uImageScale:    { value: 0.5, min: 0.1, max: 2.0, step: 0.01 },
+    uImagePosition:{ value: new THREE.Vector2(-0.5, -0.5), min: -1, max:1, step:0.01 }
   };
 
   createCpuSliders(uniforms);
+  currentUniforms = uniforms;
 
-  const width = 256;
-  const height = 256;
-  const size = width * height;
-  const data = new Uint8Array(4 * size);
-  const tex = new THREE.DataTexture(data, width, height, THREE.RGBAFormat);
+  //const width = 256, height = 256;
+  const width  = window.innerWidth;
+  const height = window.innerHeight;
+  const data  = new Uint8Array(4 * width * height);
+  const tex   = new THREE.DataTexture(data, width, height, THREE.RGBAFormat);
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.NearestFilter;
+
+  quad.material = new THREE.MeshBasicMaterial({ map: tex });
 
   function updateTexture() {
-    const imageScale = uniforms.uImageScale.value;
-    const viewportScale = uniforms.uViewportScale.value;
+    const imgS = uniforms.uImageScale.value;
+    const vpS  = uniforms.uViewportScale.value;
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const i = (y * width + x) * 4;
+    const posX = uniforms.uImagePosition.value.x;
+    const posY = uniforms.uImagePosition.value.y;
 
-        const cx = Math.floor(x * imageScale * viewportScale) % 32 < 16;
-        const cy = Math.floor(y * imageScale * viewportScale) % 32 < 16;
-        const checker = cx ^ cy;
-
-        data[i]     = checker ? 255 : 0;
-        data[i + 1] = checker ? 255 : 100;
-        data[i + 2] = 150;
-        data[i + 3] = 255;
-      }
+    switch(taskId) {
+      case '8':
+        updateTask8(
+          data, width, height,
+          imgS, vpS,
+          imageData, imageWidth, imageHeight,
+          [ posX, posY ],
+          (x, y) => {
+            const X = -x;
+            const Y = y
+            return [X, Y];
+          }
+        );
+        break;
+      case '9':
+        updateTask9(data, width, height, imgS, vpS);
+        break;
     }
 
     tex.needsUpdate = true;
     updateShaderOnce();
   }
 
-  // Attach update triggers to uniforms
-  Object.values(uniforms).forEach(uniform => {
-    uniform.onChange = updateTexture;
-  });
+  Object.values(uniforms).forEach(u => u.onChange = updateTexture);
 
-  quad.material = new THREE.MeshBasicMaterial({ map: tex });
-
-  // ✅ Trigger initial update after setup
   updateTexture();
 }
 
@@ -352,6 +397,9 @@ function runChallengeShader() {
   });
 }
 
+
+//dragging listeners ---------------------------------------------------------------------
+
 renderer.domElement.addEventListener('mousedown', (e) => {
   isDragging = true;
   dragStart = { x: e.clientX, y: e.clientY };
@@ -362,23 +410,25 @@ renderer.domElement.addEventListener('mousedown', (e) => {
   }
 });
 
-renderer.domElement.addEventListener('mousemove', (e) => {
+renderer.domElement.addEventListener('mousemove', e => {
   if (!isDragging || !initialImagePosition) return;
 
   const dx = (e.clientX - dragStart.x) / window.innerWidth;
   const dy = (e.clientY - dragStart.y) / window.innerHeight;
+  const aspect = window.innerWidth / window.innerHeight;
+  const vpS   = currentUniforms.uViewportScale?.value ?? 1.0;
 
-  // World scale based on viewport
-  const screenAspect = window.innerWidth / window.innerHeight;
-  const viewportScale = currentUniforms.uViewportScale?.value ?? 1.0;
-
-  const worldDx = dx * screenAspect * viewportScale;
-  const worldDy = -dy * viewportScale; // Invert Y for world coords
+  const worldDx = dx * aspect * vpS;
+  const worldDy = -dy * vpS;
 
   const newPos = initialImagePosition.clone().add(new THREE.Vector2(worldDx, worldDy));
   currentUniforms.uImagePosition.value.copy(newPos);
 
-  updateShaderOnce(); // Rerender
+  if (typeof currentUniforms.uImagePosition.onChange === 'function') {
+    currentUniforms.uImagePosition.onChange();
+  } else {
+    updateShaderOnce();
+  }
 });
 
 window.addEventListener('mouseup', () => {
@@ -387,6 +437,8 @@ window.addEventListener('mouseup', () => {
   initialImagePosition = null;
 });
 
+
+//button listeners -----------------------------------------------------------------------
 
 document.querySelectorAll('#buttons button').forEach(btn => {
   btn.addEventListener('click', () => {
